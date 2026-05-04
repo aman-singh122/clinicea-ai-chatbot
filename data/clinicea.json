@@ -1,0 +1,324 @@
+[
+    {
+  "title": "Calendar",
+  "content": "Clinicea Calendar is a core feature of the EMR system designed for managing appointments and overall clinic scheduling. It enables fast patient registration and smooth appointment booking processes. The calendar supports efficient resource scheduling, allowing clinics to manage doctors, rooms, and other resources effectively. It includes features like patient reminders to reduce missed appointments and improve attendance rates. Queue management helps organize patient flow and reduce waiting times. The system also simplifies billing by linking appointments with financial processes. Clinics can configure business hours, staff availability, and public holidays for accurate scheduling. Time-zone support ensures proper coordination across different regions. Users can create, edit, cancel, reschedule, and track appointments easily. The calendar also supports viewing multiple resources and managing staff assignments. It integrates with online appointment booking services and external calendars like Google, Outlook, and Apple Calendar. Additional features include appointment history tracking, automation, and performance optimization. The system enhances clinic productivity, improves operational efficiency, and ensures better patient management. Overall, the calendar acts as a central hub for managing daily clinic operations and appointments effectively.",
+  "keywords": [
+    "appointments",
+    "calendar",
+    "scheduling",
+    "patient management",
+    "clinic workflow",
+    "reminders",
+    "queue management",
+    "billing",
+    "staff management",
+    "resource management"
+  ]
+}
+,
+
+{
+  "title": "About Clinicea",
+  "content": "Clinicea is a modern, cloud-based clinic management and Electronic Medical Record (EMR) platform designed to simplify and enhance healthcare operations for clinics of all sizes and specialties. Founded in 2012, Clinicea has evolved into a globally trusted solution used across multiple continents, helping clinics digitize and streamline their daily workflows efficiently.\n\nThe platform focuses on delivering a clutter-free and highly customizable experience. Unlike traditional EMR systems, Clinicea allows clinics to tailor the system according to their specific specialty, ensuring that users only interact with relevant features without unnecessary complexity.\n\nClinicea provides a comprehensive suite of tools including appointment scheduling, patient management, EMR documentation, billing and invoicing, inventory and pharmacy management, analytics, and reporting. Its powerful calendar system enables efficient scheduling of doctors, rooms, and other resources, reducing wait times and improving patient flow.\n\nThe system enhances patient engagement through features like online appointment booking, automated reminders, feedback collection, and a dedicated patient portal. It also supports integration with external platforms such as Google Calendar, Zoom, payment gateways, and other third-party systems through APIs and webhooks.\n\nClinicea places strong emphasis on data security and compliance. Hosted on Microsoft Azure cloud infrastructure, it ensures high availability, data redundancy, and adherence to global standards like GDPR and HIPAA where applicable.\n\nOne of the key strengths of Clinicea is its ability to digitize traditional paper-based workflows. Clinics can upload and customize intake forms, consent forms, prescriptions, and medical records, enabling a completely paperless environment.\n\nThe platform supports a wide range of medical specialties including dermatology, dental, cardiology, orthopedics, pediatrics, gynecology, mental health, and many more. This flexibility makes it suitable for both single clinics and large multi-location healthcare organizations.\n\nClinicea also offers advanced features like virtual assistants, automated workflows, smart notifications, and real-time analytics, helping clinics improve operational efficiency and decision-making.\n\nTo ensure successful adoption, Clinicea provides personalized onboarding, one-on-one training, and continuous support for clinic staff. The goal is to transform software capabilities into real-world efficiency on the clinic floor.\n\nOverall, Clinicea acts as an all-in-one platform that connects clinical, operational, and financial aspects of a healthcare practice into a unified system. It empowers clinics to deliver better patient care, improve productivity, and scale their operations with ease.",
+  "keywords": [
+    "clinicea",
+    "clinic management software",
+    "EMR system",
+    "healthcare platform",
+    "patient management",
+    "appointment scheduling",
+    "medical records",
+    "billing",
+    "cloud healthcare",
+    "clinic automation",
+    "patient engagement",
+    "healthcare analytics",
+    "digital clinic",
+    "paperless healthcare",
+    "clinic workflow",
+    "telemedicine",
+    "HIPAA",
+    "GDPR",
+    "Microsoft Azure",
+    "health tech"
+  ]
+}
+,
+
+{
+  "title": "Clinicea Updates & Releases",
+  "content": "Clinicea regularly releases updates to improve system functionality, user experience, and performance. These updates include new features, enhancements, and bug fixes across different modules such as Calendar, CRM, EMR, Financials, and Patient Portal. Key updates include improvements in appointment management like editable durations, recurring appointments, and appointment undo functionality. CRM updates introduced better opportunity tracking and customer management features. Financial modules have been enhanced with improved payment handling and transaction tracking. Patient-related updates allow better access to patient details, records, and engagement tools. Integration features have been expanded to support external systems like Google Calendar and other services. Some updates focus on automation, reducing manual work and improving efficiency. Security and compliance updates ensure better data protection and adherence to standards. Performance improvements make the system faster and more responsive. Overall, these updates aim to make Clinicea more user-friendly, scalable, and efficient for clinics.",
+  "keywords": [
+    "updates",
+    "release notes",
+    "new features",
+    "enhancements",
+    "crm updates",
+    "calendar updates",
+    "performance improvements",
+    "automation",
+    "integration",
+    "security"
+  ]
+}
+
+,
+
+{
+  "title": "Clinicea Calendar Module",
+  "content": "Clinicea Calendar is a core feature designed for managing appointments, scheduling, and clinic operations efficiently. It allows clinics to create, edit, reschedule, and cancel appointments with ease. The system supports setting business hours, staff availability, and public holidays to ensure proper scheduling. Users can configure preferences like appointment duration and default staff assignments. The calendar also supports multi-resource views, enabling clinics to manage multiple doctors and rooms simultaneously. Appointment reminders can be automated via SMS or email to reduce no-shows. Clinics can track patient queues, prioritize patients, and monitor waiting times effectively. Integration with external calendars like Google Calendar, Outlook, and iCloud allows seamless synchronization. Users can also manage services linked to appointments and allocate required resources. The platform provides detailed appointment history tracking and change logs for better transparency. Billing can be done directly from the calendar interface, improving workflow efficiency. Features like quick registration and appointment search enhance usability. Tele-consultation and video conferencing options are also supported. Overall, the Calendar module improves clinic productivity, patient management, and operational efficiency.",
+  "keywords": [
+    "calendar",
+    "appointment",
+    "scheduling",
+    "patient queue",
+    "reminders",
+    "calendar sync",
+    "google calendar",
+    "appointment management",
+    "clinic scheduling",
+    "teleconsultation"
+  ]
+}
+,
+
+{
+  "title": "Clinicea CallBox Module",
+  "content": "Clinicea CallBox is a communication and call management module designed to handle incoming and outgoing calls, SMS, and patient inquiries efficiently. It helps clinics manage appointment scheduling directly through calls, allowing both new leads and existing patients to be handled seamlessly. CallBox automatically logs all incoming and outgoing calls, ensuring no inquiry is missed and improving follow-up efficiency. Clinics can record call details, track patient history, and instantly access client information during calls for better service. The system supports managing multiple call centers and teams, making it suitable for large clinic chains. It also includes features to revive inactive patients and reduce no-shows by proactive communication. CallBox provides an integrated communication inbox where SMS and MMS messages can be tracked and responded to easily. Automation features like SMS reminders and follow-ups help improve patient engagement. Users can search and filter call records quickly for better tracking and analysis. It also supports outbound calling for marketing and lead conversion activities. The module enables automatic patient identification through call-based search, improving efficiency. Overall, CallBox enhances clinic communication, boosts patient retention, and increases operational productivity.",
+  "keywords": [
+    "callbox",
+    "call management",
+    "sms automation",
+    "patient communication",
+    "lead management",
+    "call history",
+    "appointment scheduling",
+    "no show reduction",
+    "clinic call center",
+    "patient engagement"
+  ]
+}
+,
+{
+  "title": "Clinicea CRM - Lead Management and Communication",
+  "content": "Clinicea CRM module is designed to manage leads, patients, and all marketing activities in a clinic efficiently. It allows clinics to track potential patients (leads) and convert them into actual patients over time. Users can create a new lead by navigating to the CRM section and selecting 'Add New', where detailed information such as name, contact details, and date of birth can be entered. The system supports flexible name formats and allows categorization of leads based on status such as HOT, WARM, or COLD, helping prioritize follow-ups. Before saving, Clinicea checks for duplicate entries based on name and date of birth to avoid redundancy. CRM also enables clinics to organize leads into lists for targeted communication. A list is a collection of leads grouped based on specific criteria such as events, campaigns, or medical conditions. For example, leads from a diabetes awareness camp can be grouped into a Diabetes list, while another campaign may create a Hypertension list. A single lead can belong to multiple lists, allowing flexible segmentation. These lists can be used to send bulk SMS or email campaigns in a single click, improving marketing efficiency. Overall, CRM helps clinics manage leads, run campaigns, track interactions, and improve patient conversion rates.",
+  "keywords": [
+    "crm",
+    "lead management",
+    "patient conversion",
+    "marketing campaigns",
+    "lead status",
+    "hot warm cold",
+    "bulk sms",
+    "email campaigns",
+    "lead lists",
+    "clinic crm"
+  ]
+}
+
+,
+
+{
+  "title": "Clinicea EMR - Patient Medical Records and Clinical Workflow",
+  "content": "Clinicea EMR (Electronic Medical Records) module is the core system used to manage complete patient medical data and clinical workflows. It allows doctors to record patient visits, create case sheets, and maintain detailed medical histories across multiple visits. The EMR supports prescribing medications (Rx), including features like re-prescribing, grouping medications for quick prescriptions, and auto-calculating medication quantities. Doctors can also order investigations such as lab tests and group them for faster ordering. The system provides a comprehensive medical summary of patients that compiles all important clinical information into a single view. Clinicea also enables exporting a patient’s complete medical summary in one click for offline or physical use. Medical imaging features allow uploading, annotating, and reviewing images across visits using slideshow functionality. EMR includes auto-lock functionality to prevent multiple users from editing the same encounter simultaneously, ensuring data integrity. Users can track patient vitals and lab trends over time for better diagnosis. The system also supports immunization schedules, patient goals tracking, follow-ups, and recalls. Doctors can add digital signatures to prescriptions and send e-prescriptions directly to patients. Additional features include managing family records, merging duplicate patients, transferring patients between clinics, and accessing patient demographics instantly. Overall, Clinicea EMR enhances clinical efficiency, ensures accurate documentation, and improves patient care through a centralized and intelligent medical record system.",
+  "keywords": [
+    "emr",
+    "electronic medical records",
+    "patient history",
+    "prescription",
+    "medical summary",
+    "lab investigations",
+    "clinical workflow",
+    "e prescription",
+    "patient vitals",
+    "healthcare software"
+  ]
+}
+
+,
+
+{
+  "title": "Clinicea Investigations - Lab Tests and Diagnostic Management",
+  "content": "Clinicea Investigations module is designed to manage all diagnostic and lab-related workflows within a clinic. It allows doctors to order lab tests, track samples, and record investigation results efficiently. Clinics can set up customized investigation lists based on their services, including lab tests and radiology. The system supports both in-house labs and external lab integrations where samples are collected and processed. Sample collection workflows ensure proper tracking of patient samples from collection to reporting. Investigation results can be recorded and linked directly to patient records for easy access. Doctors can review results through the In-Tray feature, which acts as a centralized inbox for all investigation reports. The module also allows setting reference ranges for lab results, helping doctors interpret values accurately. Follow-up actions can be initiated directly after reviewing reports, improving patient care continuity. Billing for investigations can be handled through the system, ensuring financial tracking. Users can search for investigations, samples, and follow-ups quickly using built-in search functionality. The system supports sending reports to external labs and receiving processed results. Clinicea also provides a complete lab workflow module for managing end-to-end diagnostic processes. Overall, the Investigations module streamlines lab operations, improves diagnostic accuracy, and integrates seamlessly with patient medical records.",
+  "keywords": [
+    "investigations",
+    "lab tests",
+    "diagnostics",
+    "sample collection",
+    "lab reports",
+    "medical testing",
+    "in tray",
+    "lab workflow",
+    "patient diagnostics",
+    "healthcare lab system"
+  ]
+}
+
+,
+
+{
+  "title": "Clinicea Pharmacy - Prescription Dispensing and Billing System",
+  "content": "Clinicea Pharmacy module is designed to manage the complete workflow of prescription dispensing, billing, and inventory management within a clinic. When a doctor prescribes medications to a patient in the EMR, the prescription is automatically pushed to the Pharmacy module, eliminating the need for manual entry. The pharmacist can view all pending prescriptions under the Pharmacy dashboard and select a patient to begin the billing and dispensing process. Once selected, a billing window opens where all prescribed medications are auto-added to the bill. The pharmacist can modify quantities, add or remove items without affecting the original prescription. After confirming the bill, the pharmacist collects payment and completes the dispensing process, and inventory levels are automatically updated based on the dispensed medicines. The system supports both in-house prescriptions and walk-in patients with external prescriptions. For walk-in patients, pharmacists can manually create a new prescription and proceed with dispensing. Clinicea also supports auto-dispensing using different batching strategies such as FIFO (First In First Out), LIFO (Last In First Out), and manual batch selection. FIFO ensures older stock is used first to avoid expiry, while LIFO is useful when cost considerations are important. Manual batch selection allows pharmacists to choose specific batches when needed. The Pharmacy module also supports specialized workflows such as Homeopathy dispensing, where remedies are prepared based on potency and duration, and can be either handed directly to patients or couriered with tracking details. The system allows marking prescriptions as 'Pending' or 'Dispensed' to track their status. A powerful search feature enables filtering prescriptions by patient name, mobile number, file number, date range, clinic location, and status. This helps pharmacists quickly locate specific prescriptions without manually browsing through records. Clinicea Pharmacy integrates seamlessly with EMR, Financials, and Inventory modules, ensuring smooth operations across the clinic. Overall, the Pharmacy module simplifies medication management, reduces manual errors, improves efficiency, and ensures accurate billing and inventory tracking.",
+  "keywords": [
+    "pharmacy",
+    "prescription dispensing",
+    "medical billing",
+    "inventory management",
+    "auto dispensing",
+    "fifo lifo batching",
+    "medication management",
+    "clinic pharmacy",
+    "healthcare billing",
+    "drug dispensing system"
+  ]
+}
+,
+
+{
+  "title": "Clinicea Financials - Billing, Payments and Revenue Management System",
+  "content": "Clinicea Financials module is the core system responsible for managing all billing, payments, revenue tracking, and financial workflows within a clinic. It allows clinics to generate bills for services, inventory items, packages, and consultations in a structured and efficient manner. Bills can be created directly from the Financials section or automatically generated through modules like EMR, Pharmacy, or Appointment scheduling. Once a bill is created, the system enables multiple payment workflows such as full payment, partial payment, advance payment, and multi-mode payments including cash, card, and online methods. The Financials module supports applying promotions, discounts, and loyalty points at both item and bill levels. Clinics can define discount authorization rules where approvals are required if discounts exceed predefined limits. The system also allows issuing refunds based on available advance balance and supports bill cancellations and write-offs in case of errors or non-payment. Additionally, Clinicea supports handling insurance and corporate billing, where payments can be partially or fully covered by insurance policies with co-pay options. The module includes powerful search functionality to locate bills, payments, and packages using filters like patient name, invoice number, and date range. Clinics can also track transaction history, which shows the complete financial activity of a patient including dues and advances. The system supports family billing, where charges can be linked to a family head, and allows managing gift cards, promotional coupons, and membership programs to improve patient retention. Inventory integration ensures that stock is automatically updated when products are billed, and consumables used during services are deducted accordingly. The Financials module also supports GST and tax configurations, ensuring compliance with local regulations. Clinics can record miscellaneous income and expenses, compute staff commissions based on completed payments, and perform daily closing to reconcile cash flow. Advanced features include authorized payments (e.g., cheque clearance), bill editing with restrictions, and barcode-based billing for faster operations. Overall, Clinicea Financials provides a complete ecosystem for handling all monetary transactions in a clinic, ensuring accuracy, transparency, and operational efficiency.",
+  "keywords": [
+    "financials",
+    "medical billing",
+    "payment processing",
+    "clinic revenue",
+    "invoice management",
+    "insurance billing",
+    "discount management",
+    "tax gst",
+    "advance payment",
+    "transaction history",
+    "healthcare finance system"
+  ]
+}
+
+,
+
+{
+  "title": "Clinicea Reports and Analytics - Data Visualization and Decision Support System",
+  "content": "Clinicea Reports module provides a comprehensive system to view, analyze, and export data across all modules of the clinic such as EMR, Pharmacy, Financials, CRM, and Appointments. It enables administrators and staff to generate detailed reports that help in monitoring clinic performance and making data-driven decisions. Each report is categorized with unique icons that represent the type of data being displayed, making it easier for users to identify and navigate reports quickly. Users can generate a report by clicking on the Run option, which opens the report in a new tab with a graphical visualization. These graphs allow users to analyze trends over different time periods such as daily, weekly, or monthly. In addition to graphical mode, reports can also be viewed in text mode, which displays tabular data. The system shows the first 100 records initially, and users can navigate through additional records using pagination controls. Clinicea allows multiple reports to be opened simultaneously in different tabs, making it easy to compare different datasets without rerunning reports. Users can configure reports by selecting custom date ranges or choosing specific clinics in case of multi-branch setups. This flexibility allows for granular analysis across locations and timeframes. Reports can also be exported into CSV format, enabling further analysis in external tools like Excel. The export process depends on the volume of data and may take some time for large datasets. Additionally, Clinicea integrates communication capabilities with reports, allowing users to run SMS campaigns directly from report data. This is useful for marketing, follow-ups, and patient engagement. The system ensures compliance with communication preferences by automatically excluding patients marked as ‘Do Not Contact’. Access to reports can be controlled by administrators, ensuring that only authorized staff can view or export sensitive data. Users can also mark frequently used reports as favorites for quick access. Overall, the Reports and Analytics module acts as the intelligence layer of the clinic system, transforming raw operational data into meaningful insights that support better decision-making and operational efficiency.",
+  "keywords": [
+    "reports",
+    "analytics",
+    "data visualization",
+    "clinic dashboard",
+    "medical analytics",
+    "csv export",
+    "report filtering",
+    "healthcare reporting",
+    "business intelligence",
+    "clinic insights"
+  ]
+}
+
+,
+
+{
+  "title": "Clinicea Document Manager - Document Storage, Sharing and Workflow System",
+  "content": "Clinicea Document Manager is a centralized system that allows clinics to upload, manage, search, share, and sign documents efficiently. It supports both common clinic-level documents and patient-specific documents, ensuring proper organization and accessibility. Documents can be uploaded into a common library or attached directly to a patient's record. To upload documents into the common library, users can navigate to the Documents Library and click on '+Add New'. A document window opens where files can be selected using the Browse option or uploaded using drag-and-drop functionality. Once uploaded, documents can be categorized and assigned for easy retrieval. The system also supports searching documents at two levels: clinic-level documents and patient-specific documents. Users can search documents using filters such as document name, patient name, or other identifiers, making it easy to retrieve files quickly without manually browsing through all records. Clinicea also includes a Print Queue feature that allows practitioners to send documents such as prescriptions or letters directly for printing at the front desk. For example, a doctor can open a patient chart, click on 'Save & Print', and send the document to the print queue, where staff can print it later. This improves workflow efficiency and reduces waiting time for patients. Another key feature is document signing, where practitioners can review and digitally sign documents. Users can navigate to 'Pending Signing' to view documents awaiting approval, preview them if needed, and sign them using the provided interface. The system also supports role-based workflows, where documents created by nurses or front-desk staff are automatically sent to doctors for review and signing based on permissions. Documents can also be accessed and managed directly from the EMR. This allows staff to attach documents to patient records, send them via email, or share them with external contacts such as labs or referring doctors. The platform enables email functionality, where users can select documents from the library and send them to patients along with additional notes. Clinicea also allows users to write letters using templates and merge them with patient data. These letters can be printed, emailed, or sent for signing. Additionally, document signing preferences can be configured through system settings to ensure that all critical documents are reviewed and approved by authorized personnel. Overall, the Document Manager module enhances document handling, improves workflow automation, ensures compliance, and provides a seamless experience for managing clinic documentation.",
+  "keywords": [
+    "document manager",
+    "document upload",
+    "clinic documents",
+    "patient documents",
+    "print queue",
+    "digital signature",
+    "document search",
+    "email documents",
+    "healthcare documentation",
+    "medical records"
+  ]
+}
+
+,
+
+{
+  "title": "Clinicea Administration, Security and Compliance Module - Staff, Permissions and Data Governance System",
+  "content": "Clinicea Administration module provides complete control over staff management, user access, security settings, and compliance requirements within the clinic system. It allows administrators to manage users, define roles, assign permissions, and ensure that sensitive medical data is accessed only by authorized personnel. Staff members can be added only through an admin account. The administrator can define which clinic or branch the staff belongs to, assign roles, and configure access levels accordingly. Password management features are also available, allowing administrators to reset passwords for staff, while users can change or reset their own passwords if forgotten. Staff deletion is handled carefully to ensure that historical data created by that staff member remains intact in the system. Clinicea also includes a robust role-based access control system. Permissions are assigned based on roles such as Doctor, Nurse, Receptionist, or Admin. Each module such as CRM, Inventory, Finance, Investigations, Calendar, and CallBox has specific permissions that define what actions a user can perform. For example, in Inventory, permissions control stock updates and batch management, while in Finance, permissions control billing, invoice deletion, and payment handling. Security settings allow administrators to restrict system access based on location, ensuring that staff cannot access Clinicea from outside the clinic network if required. This adds an additional layer of protection against unauthorized access. Clinicea also supports compliance with global data protection standards such as GDPR and HIPAA. Since it is a cloud-based system, data may be stored across multiple servers, but strict policies ensure that patient data remains secure and confidential. GDPR compliance ensures that patient data is handled with transparency and allows patients to request access or deletion of their data. HIPAA compliance ensures protection of sensitive health information (PHI) through encryption and controlled access. Additional compliance features include audit logs, data access tracking, and regulatory support such as NABIDH certification processes. The system also supports advanced configurations like communication templates, address book management, SMS sender ID setup, and social media integration for clinics. Administrators can create customized login pages, manage dropdown lists, group clinics into organizational structures, and configure advanced data sources for patients and leads. Backup systems are also in place, where clinic data is stored securely using real-time snapshot technology, ensuring data safety and recovery in case of failures. Overall, the Administration, Security, and Compliance module ensures smooth clinic operations, strong data protection, controlled access, and adherence to healthcare regulations.",
+  "keywords": [
+    "staff management",
+    "user roles",
+    "permissions",
+    "security",
+    "HIPAA",
+    "GDPR",
+    "data protection",
+    "clinic admin",
+    "role based access",
+    "healthcare compliance"
+  ]
+}
+
+,
+
+{
+  "title": "Clinicea Patient Portal Module - Access, Authentication and Self-Service Management",
+  "content": "Clinicea Patient Portal module provides patients with secure access to their medical information, prescriptions, appointments, and communication with the clinic. This module enhances patient engagement by allowing them to interact with the clinic digitally without requiring physical visits for basic tasks. To enable Patient Portal access, the clinic staff must first select the patient from the system and open the Patient Details section either through the Appointments module or directly from the Patient Chart. Within the patient profile, access to the Patient Portal can be enabled, which allows the patient to log in using their credentials. Patients can manage their own accounts, including changing their password by logging into the portal and navigating to the Change Password option. The system provides a secure authentication mechanism where patients must enter their current password and set a new one. In cases where patients forget their password, clinic administrators or staff can reset the password from the Patient Details section. This ensures that patients regain access without compromising account security. Clinicea also supports patient self-registration through a customizable form that can be embedded on the clinic’s website. This allows new patients to register themselves by filling in their details online, which are then stored in the system for future use. The Patient Portal integrates with other modules such as EMR, Appointments, Billing, and Documents, enabling patients to view prescriptions, check appointment schedules, download reports, and receive communications. Security is maintained through controlled access, authentication protocols, and data protection standards to ensure patient information remains confidential. Overall, the Patient Portal module reduces administrative workload, improves patient convenience, and supports a seamless digital healthcare experience.",
+  "keywords": [
+    "patient portal",
+    "patient login",
+    "self registration",
+    "password reset",
+    "healthcare portal",
+    "patient access",
+    "clinic system",
+    "EMR integration",
+    "digital healthcare"
+  ]
+}
+
+,
+
+{
+  "title": "Clinicea API & Integrations Module - External Systems, Webhooks and Third Party Connectivity",
+  "content": "Clinicea API and Integrations module allows third-party developers and external systems to securely connect with the Clinicea platform for data exchange and automation. API access is typically available under the Enterprise plan, where a predefined number of API calls per month is allocated per practitioner license. The Clinicea API enables external systems such as CRM platforms, financial systems, call center tools, and ticketing systems to integrate seamlessly with clinic operations. Developers can use API endpoints to fetch patient visit data, manage appointments, retrieve billing details, and synchronize records across systems. API usage is governed by rate limits to ensure fair usage and system stability. In addition to APIs, Clinicea supports Webhooks which allow real-time event-based communication. Whenever a specific event occurs in the system, such as appointment booking, patient registration, or billing, a webhook can notify external systems instantly. This enables automation workflows without continuous polling. Clinicea also provides integration capabilities with third-party platforms such as Zoom for teleconsultation, WordPress for website embedding, Convex Call Center software for communication management, and VirtuaQ for token-based patient queue management. For Zoom integration, clinics can create and connect their Zoom account through the Zoom App Marketplace, enabling video consultations directly within Clinicea. Similarly, integration with WordPress allows embedding online booking widgets into clinic websites. The API module also supports specialized integrations such as QR code-based e-invoicing (for regions like Saudi Arabia), card reader integrations for payment or identification, and communication APIs for SMS or notifications. Security is maintained using authentication tokens, API keys, and access controls to ensure that only authorized systems can interact with Clinicea. Overall, the API and Integrations module extends the core Clinicea system into a connected ecosystem, enabling automation, scalability, and interoperability across healthcare and business platforms.",
+  "keywords": [
+    "api integration",
+    "webhooks",
+    "third party integration",
+    "healthcare api",
+    "zoom integration",
+    "wordpress integration",
+    "crm integration",
+    "clinic software api",
+    "automation"
+  ]
+}
+
+,
+
+{
+  "title": "Clinicea Training & Troubleshooting Module - User Onboarding, Role-Based Learning and Issue Resolution",
+  "content": "Clinicea Training and Troubleshooting module is designed to help users effectively learn, adopt, and resolve issues while using the platform. The training section provides structured learning resources such as training videos, walkthroughs, and role-based guides tailored for different users including practitioners, reception staff, pharmacists, accountants, and therapists. These resources ensure that each user understands their responsibilities and workflows within the system. Specialized training modules such as NABIDH compliance training guide users on how to correctly enter EMR data according to regulatory standards. The system also includes checklists and task-based guides for roles like receptionists, ensuring smooth day-to-day clinic operations. For continuous learning, Clinicea provides interactive showcases and product training sessions which help users adapt to system updates and advanced features. In addition to training, the troubleshooting section addresses common technical and operational issues faced by users. These include resolving browser-related issues, fixing login problems, handling WebSocket errors, and addressing printing or hardware-related problems. Users can also troubleshoot issues such as missing currency icons, DNS configuration errors, slow system performance, or platform downtime. The system provides step-by-step solutions for resolving HTTP errors like Error 400, as well as correcting configuration issues such as incorrect date or time settings that may impact billing or operations. Clinicea also offers guidance on handling system latency, ensuring that users understand acceptable performance benchmarks and how to respond to slow system behavior. Additionally, support features like ticketing systems allow users to raise and track issues, ensuring timely resolution by the support team. Overall, the Training and Troubleshooting module ensures smooth onboarding, reduces dependency on support teams, enhances user productivity, and maintains uninterrupted clinic operations by quickly resolving issues.",
+  "keywords": [
+    "training module",
+    "user onboarding",
+    "troubleshooting",
+    "clinic software support",
+    "error resolution",
+    "login issues",
+    "websocket error",
+    "browser issues",
+    "healthcare training"
+  ]
+}
+
+,
+
+{
+  "title": "Clinicea Desktop & Offline Access Module - Scheduled Jobs and Remote Access Management",
+  "content": "Clinicea Desktop and Offline Access Module is designed to support clinics that operate in environments with limited or intermittent internet connectivity. This module allows clinics to use a locally installed version of Clinicea while still maintaining synchronization with the cloud system when required. One of the key functionalities is the ability to run scheduled background jobs using the Windows Task Scheduler. This enables automatic execution of tasks such as data synchronization, backups, report generation, and system updates without requiring manual intervention. By configuring scheduled jobs, clinics can ensure that critical operations are performed at predefined intervals, even in offline mode. In addition to scheduling, the module also supports remote access capabilities. Clinics can grant access to remote users who need to use the desktop version from a different location. This is particularly useful for administrators, doctors, or support teams who may need to access clinic data without being physically present at the clinic. Remote access can be configured using secure methods such as remote desktop connections or controlled access credentials, ensuring data security while maintaining accessibility. The module ensures that data integrity is maintained by synchronizing offline data with the central system once connectivity is restored. Overall, the Desktop and Offline Access Module provides flexibility, operational continuity, and secure access, enabling clinics to function efficiently even in low-connectivity environments while supporting remote collaboration.",
+  "keywords": [
+    "offline clinic software",
+    "desktop version",
+    "windows task scheduler",
+    "scheduled jobs",
+    "remote access",
+    "data sync",
+    "clinic system offline",
+    "remote desktop",
+    "healthcare IT"
+  ]
+}
+
+]

@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings — Z-Chatbot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+/* ── DARK THEME (default) ── */
+:root,
+[data-theme="dark"]{
+  --bg:#0c0c0f;--bg2:#13131a;--bg3:#1c1c26;--bg4:#252535;
+  --bdr:rgba(255,255,255,0.07);--bdr2:rgba(255,255,255,0.13);
+  --acc:#5b8af5;--acc2:rgba(91,138,245,0.12);--acc3:rgba(91,138,245,0.22);
+  --t1:#eeeef5;--t2:#8888aa;--t3:#44445a;
+  --ok:#34d399;--err:#f87171;
+  --glow1:rgba(91,138,245,0.15);--glow2:rgba(167,139,250,0.12)
+}
+
+/* ── LIGHT THEME ── */
+[data-theme="light"]{
+  --bg:#f0eff8;--bg2:#ffffff;--bg3:#f0eff8;--bg4:#e4e3f0;
+  --bdr:rgba(0,0,0,0.08);--bdr2:rgba(0,0,0,0.13);
+  --acc:#5b6af5;--acc2:rgba(91,106,245,0.08);--acc3:rgba(91,106,245,0.16);
+  --t1:#1a1930;--t2:#5a586e;--t3:#a09eb8;
+  --ok:#059669;--err:#dc2626;
+  --glow1:rgba(91,106,245,0.08);--glow2:rgba(139,92,246,0.06)
+}
+
+html,body{
+  min-height:100vh;
+  background:var(--bg);
+  color:var(--t1);
+  font-family:'Sora',sans-serif;
+  font-size:14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+  overflow:hidden;
+  transition:background 0.25s, color 0.25s;
+}
+
+/* BG GLOWS */
+body::before,body::after{
+  content:'';position:fixed;border-radius:50%;
+  pointer-events:none;filter:blur(90px);
+}
+body::before{
+  width:500px;height:500px;
+  background:var(--acc);opacity:.15;
+  top:-100px;right:-100px;
+  transition:opacity 0.25s;
+}
+body::after{
+  width:340px;height:340px;
+  background:#a78bfa;opacity:.12;
+  bottom:40px;left:-80px;
+  transition:opacity 0.25s;
+}
+[data-theme="light"] body::before{opacity:.07}
+[data-theme="light"] body::after{opacity:.05}
+
+/* ── THEME TOGGLE ── */
+.theme-toggle-wrap{
+  position:fixed;top:20px;right:20px;z-index:10;
+}
+.theme-btn{
+  width:38px;height:38px;border-radius:10px;
+  background:var(--bg2);
+  border:1px solid var(--bdr2);
+  color:var(--t2);
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.15s;
+  position:relative;overflow:hidden;
+}
+.theme-btn:hover{background:var(--bg3);color:var(--t1);border-color:var(--bdr2);}
+.theme-btn svg{
+  width:16px;height:16px;
+  position:absolute;
+  transition:opacity 0.2s, transform 0.3s;
+}
+.theme-btn .icon-sun{opacity:0;transform:rotate(90deg) scale(0.7);}
+.theme-btn .icon-moon{opacity:1;transform:rotate(0deg) scale(1);}
+[data-theme="light"] .theme-btn .icon-sun{opacity:1;transform:rotate(0deg) scale(1);}
+[data-theme="light"] .theme-btn .icon-moon{opacity:0;transform:rotate(-90deg) scale(0.7);}
+
+/* ── CARD ── */
+.card{
+  width:min(400px,100%);
+  background:var(--bg2);
+  border:1px solid var(--bdr2);
+  border-radius:16px;
+  padding:32px 28px;
+  box-shadow:0 24px 64px rgba(0,0,0,.35);
+  animation:fadeUp .35s cubic-bezier(.34,1.56,.64,1) both;
+  position:relative;z-index:1;
+  transition:background 0.25s, border-color 0.25s, box-shadow 0.25s;
+}
+[data-theme="light"] .card{box-shadow:0 12px 40px rgba(0,0,0,.1);}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+
+/* HEADER */
+.card-header{display:flex;align-items:center;gap:12px;margin-bottom:28px}
+.card-icon{
+  width:40px;height:40px;border-radius:12px;background:var(--acc);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  transition:background 0.25s;
+}
+.card-icon svg{width:18px;height:18px}
+.card-title{font-size:17px;font-weight:600;letter-spacing:-.01em;color:var(--t1)}
+.card-sub{font-size:11.5px;color:var(--t3);font-family:'JetBrains Mono',monospace;margin-top:2px}
+
+/* DIVIDER */
+.divider{height:1px;background:var(--bdr);margin-bottom:24px;transition:background 0.25s;}
+
+/* FORM GROUP */
+.fgroup{margin-bottom:18px}
+.fgroup:last-of-type{margin-bottom:22px}
+label{
+  display:block;font-size:12px;font-weight:500;
+  color:var(--t2);margin-bottom:7px;
+  letter-spacing:.02em;text-transform:uppercase;
+}
+
+/* INPUTS */
+select,input{
+  width:100%;padding:11px 14px;
+  background:var(--bg3);border:1px solid var(--bdr2);
+  border-radius:10px;color:var(--t1);
+  font-family:'Sora',sans-serif;
+  font-size:13.5px;outline:none;
+  transition:border-color .18s, box-shadow .18s, background 0.25s, color 0.25s;
+  appearance:none;-webkit-appearance:none;
+}
+select{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238888aa' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;
+  padding-right:36px;cursor:pointer;
+}
+select option{background:var(--bg2);color:var(--t1)}
+input::placeholder{color:var(--t3)}
+select:focus,input:focus{
+  border-color:rgba(91,138,245,.55);
+  box-shadow:0 0 0 3px rgba(91,138,245,.15);
+}
+
+/* PASSWORD WRAPPER */
+.pw-wrap{position:relative}
+.pw-wrap input{padding-right:42px}
+.pw-toggle{
+  position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  background:none;border:none;color:var(--t3);cursor:pointer;
+  padding:4px;display:flex;align-items:center;justify-content:center;
+  transition:color .15s;
+}
+.pw-toggle:hover{color:var(--t2)}
+.pw-toggle svg{width:15px;height:15px}
+
+/* USER INDICATOR */
+.user-indicator{
+  display:flex;align-items:center;gap:8px;
+  padding:9px 12px;
+  background:var(--bg3);border:1px solid var(--bdr);border-radius:10px;
+  margin-top:8px;transition:background 0.25s,border-color 0.25s;
+}
+.u-dot{width:8px;height:8px;border-radius:50%;background:var(--acc);flex-shrink:0;transition:background 0.25s;}
+.u-label{font-size:12px;color:var(--t2);font-family:'JetBrains Mono',monospace}
+.u-val{font-size:12px;color:var(--t1);font-weight:500;font-family:'JetBrains Mono',monospace;margin-left:auto}
+
+/* SAVE BUTTON */
+.btn-save{
+  width:100%;padding:12px;border-radius:10px;border:none;
+  background:var(--acc);color:#fff;
+  font-family:'Sora',sans-serif;font-size:14px;font-weight:600;
+  cursor:pointer;transition:all .18s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.btn-save:hover{filter:brightness(1.1);transform:translateY(-1px);box-shadow:0 6px 20px rgba(91,138,245,.35)}
+.btn-save:active{transform:scale(.97);box-shadow:none}
+.btn-save:disabled{background:var(--bg4);color:var(--t3);cursor:not-allowed;transform:none;box-shadow:none}
+.btn-save svg{width:15px;height:15px}
+
+/* STATUS */
+.status{
+  margin-top:14px;padding:10px 14px;border-radius:10px;
+  font-size:12.5px;font-weight:500;display:none;
+  align-items:center;gap:8px;animation:fadeUp .2s ease both;
+}
+.status.ok{background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.28);color:var(--ok);display:flex}
+.status.er{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.24);color:var(--err);display:flex}
+.status svg{width:14px;height:14px;flex-shrink:0}
+
+/* BACK LINK */
+.back-wrap{margin-top:20px;text-align:center}
+.back{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:13px;color:var(--t3);text-decoration:none;
+  transition:color .15s;font-weight:500;
+}
+.back:hover{color:var(--t1)}
+.back svg{width:14px;height:14px}
+
+/* INFO NOTE */
+.note{
+  margin-top:20px;padding:11px 14px;
+  background:var(--acc2);
+  border:1px solid rgba(91,138,245,.18);border-radius:10px;
+  font-size:12px;color:var(--t2);line-height:1.6;
+  transition:background 0.25s,border-color 0.25s;
+}
+.note strong{color:var(--t1);font-weight:500}
+</style>
+</head>
+<body>
+
+<!-- THEME TOGGLE (top-right corner) -->
+<div class="theme-toggle-wrap">
+  <button class="theme-btn" onclick="toggleTheme()" title="Toggle theme">
+    <!-- Sun (shown in light mode) -->
+    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="5"/>
+      <line x1="12" y1="1" x2="12" y2="3"/>
+      <line x1="12" y1="21" x2="12" y2="23"/>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+      <line x1="1" y1="12" x2="3" y2="12"/>
+      <line x1="21" y1="12" x2="23" y2="12"/>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+    </svg>
+    <!-- Moon (shown in dark mode) -->
+    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+    </svg>
+  </button>
+</div>
+
+<div class="card">
+
+  <!-- HEADER -->
+  <div class="card-header">
+    <div class="card-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    </div>
+    <div>
+      <div class="card-title">Settings</div>
+      <div class="card-sub">api key configuration</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- USER -->
+  <div class="fgroup">
+    <label>User</label>
+    <select id="userSel" onchange="onUserChange()">
+      <option value="user1">User 1</option>
+      <option value="user2">User 2</option>
+    </select>
+    <div class="user-indicator">
+      <div class="u-dot"></div>
+      <span class="u-label">Active user</span>
+      <span class="u-val" id="uVal">user1</span>
+    </div>
+  </div>
+
+  <!-- API KEY -->
+  <div class="fgroup">
+    <label>Gemini API Key</label>
+    <div class="pw-wrap">
+      <input type="password" id="apikey" placeholder="Enter your Gemini API key" autocomplete="off">
+      <button class="pw-toggle" onclick="toggleVis()" title="Show / hide key" id="eyeBtn">
+        <svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- SAVE -->
+  <button class="btn-save" id="saveBtn" onclick="saveKey()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+      <polyline points="17 21 17 13 7 13 7 21"/>
+      <polyline points="7 3 7 8 15 8"/>
+    </svg>
+    Save API Key
+  </button>
+
+  <!-- STATUS -->
+  <div class="status" id="statusMsg"></div>
+
+  <!-- NOTE -->
+  <div class="note">
+    <strong>Each user has their own key.</strong> User 1 and User 2 are isolated — documents and API keys are never shared between them.
+  </div>
+
+  <!-- BACK -->
+  <div class="back-wrap">
+    <a href="home.html" class="back">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"/>
+        <polyline points="12 19 5 12 12 5"/>
+      </svg>
+      Back to Chat
+    </a>
+  </div>
+
+</div>
+
+<script>
+const API = 'http://localhost:5000';
+let visible = false;
+
+// ── THEME (synced with index.html via localStorage) ──
+const savedTheme = localStorage.getItem('theme') || 'dark';
+document.documentElement.setAttribute('data-theme', savedTheme);
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme');
+  const next = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('theme', next);
+}
+
+// ── USER ──
+const savedUser = localStorage.getItem('user') || 'user1';
+document.getElementById('userSel').value = savedUser;
+document.getElementById('uVal').textContent = savedUser;
+
+function onUserChange() {
+  const u = document.getElementById('userSel').value;
+  document.getElementById('uVal').textContent = u;
+  localStorage.setItem('user', u);
+  hideStatus();
+  document.getElementById('apikey').value = '';
+}
+
+// ── PASSWORD TOGGLE ──
+function toggleVis() {
+  visible = !visible;
+  const inp = document.getElementById('apikey');
+  inp.type = visible ? 'text' : 'password';
+  document.getElementById('eyeIcon').innerHTML = visible
+    ? `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>`
+    : `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
+}
+
+function hideStatus() {
+  const s = document.getElementById('statusMsg');
+  s.className = 'status';
+  s.style.display = 'none';
+}
+
+function showStatus(msg, type) {
+  const s = document.getElementById('statusMsg');
+  const ic = type === 'ok'
+    ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>`
+    : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+  s.innerHTML = ic + msg;
+  s.className = `status ${type}`;
+}
+
+async function saveKey() {
+  const user = document.getElementById('userSel').value;
+  const apiKey = document.getElementById('apikey').value.trim();
+  const btn = document.getElementById('saveBtn');
+
+  hideStatus();
+
+  if (!apiKey) {
+    showStatus('Please enter your Gemini API key', 'er'); return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="animation:spin .8s linear infinite"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg>Saving...`;
+
+  try {
+    const res = await fetch(`${API}/save-api-key`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user, apiKey })
+    });
+    if (res.ok) {
+      showStatus('API key saved for ' + user.replace('user', 'User '), 'ok');
+      document.getElementById('apikey').value = '';
+    } else {
+      showStatus('Server error. Try again.', 'er');
+    }
+  } catch {
+    showStatus('Cannot reach server on port 5000', 'er');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Save API Key`;
+  }
+}
+
+const style = document.createElement('style');
+style.textContent = '@keyframes spin{to{transform:rotate(360deg)}}';
+document.head.appendChild(style);
+</script>
+</body>
+</html>
