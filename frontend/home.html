@@ -929,7 +929,17 @@
             <div class="status-dot" id="statusDot"></div>
             <span class="topbar-title" id="statusTitle">Ready to answer</span>
           </div>
+          
           <div class="topbar-right">
+
+                <a href="dashboard.html" class="icon-btn" title="Dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="7" height="7"/>
+        <rect x="14" y="3" width="7" height="7"/>
+        <rect x="14" y="14" width="7" height="7"/>
+        <rect x="3" y="14" width="7" height="7"/>
+      </svg>
+    </a>
             <button
               class="icon-btn clear-btn"
               onclick="clearChat()"
@@ -1358,49 +1368,23 @@
           if (!stopRequested) {
             // ================= ACTION HANDLE =================
             if (data.type === "action" && data.action === "new_bill") {
-              // 🔥 message show
-              typewriterMsg(
-                `✅ Bill Created
+              const message = `Sure, generating the bill for ${data.patient}...\nOpening dashboard for further actions...`;
 
-Patient: ${data.patient}
-File No: ${data.fileNo}
+              // 🔥 chatbot typing effect
+              typewriterMsg(message, () => {
+                // 🔥 delay before opening dashboard
+                setTimeout(() => {
+                  localStorage.setItem("actionData", JSON.stringify(data));
+                  window.open("dashboard.html", "_blank");
 
-Summary:
-${data.summary}`,
-                () => {
-                  const lastBubble = document.querySelector(
-                    ".msg-row.bot:last-child .msg-bubble",
-                  );
-                  if (data.billUrl && lastBubble) {
-                    const btn = document.createElement("button");
-                    btn.textContent = "📄 View Bill";
-
-                    btn.style.marginTop = "12px";
-                    btn.style.padding = "6px 14px";
-                    btn.style.borderRadius = "20px";
-                    btn.style.background = "#5b6cff";
-                    btn.style.color = "white";
-                    btn.style.border = "none";
-                    btn.style.cursor = "pointer";
-                    btn.style.fontSize = "13px";
-                    btn.style.marginLeft="5px";
-                    btn.style.display = "inline-block";
-
-                    btn.onclick = () => {
-                      const iframe = document.createElement("iframe");
-                      iframe.src = data.billUrl;
-                      iframe.style.width = "100%";
-                      iframe.style.height = "500px";
-                      iframe.style.marginTop = "12px";
-                      iframe.style.borderRadius = "10px";
-                      iframe.style.border = "1px solid #333";
-                      lastBubble.appendChild(iframe); // 🔥 सही जगह
-                    };
-
-                    lastBubble.appendChild(btn); // 🔥 सही जगह
-                  }
-                },
-              );
+                  // reset UI
+                  isBusy = false;
+                  sendBtn.disabled = false;
+                  setStopVisible(false);
+                  setStatus("ready");
+                  chatInput.focus();
+                }, 1000); // ⏱️ 1 second delay
+              });
 
               return;
             }

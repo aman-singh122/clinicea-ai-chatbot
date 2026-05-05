@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ClinicPro | Enterprise Dashboard</title>
+  <!-- Google Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-dark: #4338ca;
+      --success: #10b981;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --radius: 12px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+
+    body { background-color: var(--bg); color: var(--text-main); -webkit-font-smoothing: antialiased; }
+
+    /* HEADER */
+    .header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1rem 5%; background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(10px); border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 50;
+    }
+
+    .brand { font-size: 1.4rem; font-weight: 800; color: var(--primary); letter-spacing: -0.02em; display: flex; align-items: center; gap: 8px; }
+
+    .actions { display: flex; gap: 12px; }
+
+    /* BUTTONS */
+    .btn {
+      padding: 0.6rem 1.2rem; border-radius: 8px; border: none;
+      cursor: pointer; font-weight: 600; font-size: 0.875rem;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2); }
+    .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+    
+    .btn-secondary { background: var(--success); color: white; }
+    .btn-secondary:hover { opacity: 0.9; transform: translateY(-1px); }
+
+    .btn-outline { background: white; border: 1px solid var(--border); color: var(--text-main); }
+    .btn-outline:hover { background: #f1f5f9; border-color: #cbd5e1; }
+
+    /* MAIN */
+    .main { padding: 2.5rem 5%; max-width: 1400px; margin: 0 auto; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
+
+    /* CARDS */
+    .card {
+      background: var(--card-bg); border-radius: var(--radius); padding: 1.5rem;
+      border: 1px solid var(--border); transition: all 0.3s ease;
+      display: flex; flex-direction: column; height: 100%;
+    }
+    .card:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05); border-color: var(--primary); }
+
+    .card-header { margin-bottom: 1rem; }
+    .card h3 { font-size: 1.15rem; font-weight: 700; color: var(--text-main); margin-bottom: 4px; }
+    .file-badge { font-size: 0.7rem; font-weight: 700; color: var(--primary); background: #eef2ff; padding: 4px 8px; border-radius: 6px; text-transform: uppercase; }
+
+    .summary-text { font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1.5rem; flex-grow: 1; }
+
+    /* FULL SCREEN OVERLAY */
+    .pdf-overlay {
+      position: fixed; inset: 0; background: #0f172a; z-index: 1000;
+      display: none; flex-direction: column;
+    }
+    .pdf-header {
+      padding: 0.8rem 2rem; background: #1e293b; color: white;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .pdf-frame { flex-grow: 1; width: 100%; border: none; background: #f1f5f9; }
+
+    /* MODAL */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4);
+      backdrop-filter: blur(8px); display: none; justify-content: center; align-items: center; z-index: 100;
+    }
+    .modal-content {
+      background: white; width: 95%; max-width: 480px; padding: 2rem;
+      border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      animation: slideUp 0.3s ease-out;
+    }
+    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    .form-group { margin-bottom: 1.25rem; }
+    label { display: block; font-size: 0.8rem; font-weight: 700; margin-bottom: 6px; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.02em; }
+    input, textarea {
+      width: 100%; padding: 0.8rem; border-radius: 8px; border: 1.5px solid var(--border);
+      font-size: 1rem; outline: none; transition: all 0.2s;
+    }
+    input:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); }
+    textarea { min-height: 120px; }
+
+    .empty-state { text-align: center; padding: 5rem 2rem; grid-column: 1/-1; color: var(--text-muted); }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="brand"><i data-lucide="activity"></i> ClinicPro</div>
+  <div class="actions">
+    <button class="btn btn-primary" onclick="toggleModal(true)"><i data-lucide="plus"></i> New Bill</button>
+    <button class="btn btn-secondary"><i data-lucide="credit-card"></i> New Payment</button>
+  </div>
+</header>
+
+<main class="main">
+  <div id="billContainer" class="grid">
+    <!-- Dynamic Cards Render Here -->
+  </div>
+</main>
+
+<!-- PDF Full Screen Overlay -->
+<div id="pdfOverlay" class="pdf-overlay">
+  <div class="pdf-header">
+    <div style="display: flex; align-items: center; gap: 10px;">
+        <i data-lucide="file-text"></i>
+        <span id="pdfTitle" style="font-weight: 600;">Document Viewer</span>
+    </div>
+    <button class="btn btn-outline" style="background: #ef4444; color: white; border: none;" onclick="closePDF()">
+        <i data-lucide="x"></i> Close Viewer
+    </button>
+  </div>
+  <iframe id="pdfFrame" class="pdf-frame"></iframe>
+</div>
+
+<!-- Modal -->
+<div id="modalOverlay" class="modal-overlay">
+  <div class="modal-content">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+      <h2 style="font-weight: 800; font-size: 1.5rem;">New Medical Bill</h2>
+      <button onclick="toggleModal(false)" style="background: none; border: none; cursor: pointer; color: var(--text-muted);"><i data-lucide="x"></i></button>
+    </div>
+    
+    <div class="form-group">
+      <label>Patient Full Name</label>
+      <input type="text" id="patientName" placeholder="e.g. Aman Kumar">
+    </div>
+
+    <div class="form-group">
+      <label>File Number</label>
+      <input type="text" id="fileNo" placeholder="REG-2026-001">
+    </div>
+
+    <div class="form-group">
+      <label>Medical Summary</label>
+      <textarea id="summary" placeholder="Enter diagnosis or billing notes..."></textarea>
+    </div>
+
+    <button class="btn btn-primary" style="width: 100%; justify-content: center; padding: 1rem; margin-top: 0.5rem;" onclick="saveBill()">
+      Generate & Save Bill
+    </button>
+  </div>
+</div>
+
+<script>
+  let bills = JSON.parse(localStorage.getItem("bills")) || [];
+
+  function toggleModal(show) {
+    const modal = document.getElementById("modalOverlay");
+    modal.style.display = show ? "flex" : "none";
+    if(!show) clearForm();
+  }
+
+  function clearForm() {
+    document.getElementById("patientName").value = "";
+    document.getElementById("fileNo").value = "";
+    document.getElementById("summary").value = "";
+  }
+
+  function saveBill() {
+    const name = document.getElementById("patientName").value;
+    const file = document.getElementById("fileNo").value;
+    const desc = document.getElementById("summary").value;
+
+    if(!name || !file) {
+      alert("Please fill in Name and File Number");
+      return;
+    }
+
+    const newBill = {
+      id: Date.now(),
+      patient: name,
+      fileNo: file,
+      summary: desc,
+      billUrl: "bill_1_1777980929511.pdf" 
+    };
+
+    bills.unshift(newBill);
+    localStorage.setItem("bills", JSON.stringify(bills));
+    
+    renderAll();
+    toggleModal(false);
+  }
+
+  function renderAll() {
+    const container = document.getElementById("billContainer");
+    container.innerHTML = "";
+
+    if (bills.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <i data-lucide="folder-open" style="width: 48px; height: 48px; margin-bottom: 1rem; opacity: 0.5;"></i>
+          <p>No billing history found. Create your first bill to get started.</p>
+        </div>`;
+      lucide.createIcons();
+      return;
+    }
+
+    bills.forEach(bill => {
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <div class="card-header">
+          <span class="file-badge">ID: ${bill.fileNo}</span>
+          <h3 style="margin-top: 10px;">${bill.patient}</h3>
+        </div>
+        <p class="summary-text">${bill.summary || 'No detailed summary provided for this record.'}</p>
+        <div class="card-footer">
+          <button class="btn btn-outline" style="width: 100%; justify-content: center;" onclick="viewPDF('${bill.billUrl}', '${bill.patient}')">
+            <i data-lucide="eye"></i> View Full Bill
+          </button>
+        </div>
+      `;
+      container.appendChild(card);
+    });
+    lucide.createIcons();
+  }
+
+  function viewPDF(url, patientName) {
+    document.getElementById("pdfTitle").innerText = `Billing Report: ${patientName}`;
+    document.getElementById("pdfFrame").src = url;
+    document.getElementById("pdfOverlay").style.display = "flex";
+    document.body.style.overflow = "hidden"; // Disable scroll
+  }
+
+  function closePDF() {
+    document.getElementById("pdfOverlay").style.display = "none";
+    document.body.style.overflow = "auto"; // Enable scroll
+    document.getElementById("pdfFrame").src = "";
+  }
+
+  // Initial Render
+  renderAll();
+  lucide.createIcons();
+
+  window.onclick = function(event) {
+    const modal = document.getElementById("modalOverlay");
+    if (event.target == modal) toggleModal(false);
+  }
+</script>
+
+</body>
+</html>
