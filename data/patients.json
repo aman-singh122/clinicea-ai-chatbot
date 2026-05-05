@@ -1,0 +1,24 @@
+[
+  {
+    "user": "user1",
+    "patients": [
+      {
+        "name": "rahul",
+        "fullName": "Rahul Sharma",
+        "fileNo": 1,
+        "filePath": "uploads/user1/Patient_Checkup_Report_Rahul_Sharma.pdf"
+      }
+    ]
+  },
+  {
+    "user": "user2",
+    "patients": [
+      {
+        "name": "john",
+        "fullName": "John Doe",
+        "fileNo": 11,
+        "filePath": "uploads/user2/john_report.pdf"
+      }
+    ]
+  }
+]

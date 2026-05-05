@@ -8,24 +8,28 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { createRequire } from "module";
 
-// ================= COMMONJS SUPPORT =================
-const require = createRequire(import.meta.url);
-
-// ================= PDF PARSE =================
-const pdfParse = require("pdf-parse");
-
 // ================= DIR SETUP =================
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// ================= COMMONJS SUPPORT =================
+const require = createRequire(import.meta.url);
+
+// ================= LIBS =================
+const PDFDocument = require("pdfkit");
+const pdfParse = require("pdf-parse");
+
 // ================= PATHS =================
+const patientsPath = path.join(__dirname, "../data/patients.json");
 const apiKeysPath = path.join(__dirname, "../data/apiKeys.json");
 const docsPath = path.join(__dirname, "../data/documents.json");
 const cliniceaPath = path.join(__dirname, "../data/clinicea.json");
 const uploadsPath = path.join(__dirname, "../uploads");
 
-// ================= APP =================
 const app = express();
+app.use("/uploads", express.static(uploadsPath));
+
+// ================= APP =================
 app.use(cors({ origin: "*" }));
 app.use(express.json());
 
@@ -44,7 +48,7 @@ const storage = multer.diskStorage({
   },
   filename: function (req, file, cb) {
     cb(null, Date.now() + "-" + file.originalname);
-  }
+  },
 });
 
 const upload = multer({ storage });
@@ -69,16 +73,15 @@ app.post("/upload", upload.single("file"), async (req, res) => {
       }
     }
 
-  docs.push({
-  user,
-  filename: req.file.originalname,  // ✅ ADD THIS
-  content: data.text || ""
-});
+    docs.push({
+      user,
+      filename: req.file.originalname, // ✅ ADD THIS
+      content: data.text || "",
+    });
 
     fs.writeFileSync(docsPath, JSON.stringify(docs, null, 2));
 
     res.status(200).json({ message: "File uploaded successfully" });
-
   } catch (err) {
     console.error("UPLOAD ERROR:", err);
     res.status(500).json({ error: "Upload failed" });
@@ -106,17 +109,83 @@ app.post("/save-api-key", (req, res) => {
     fs.writeFileSync(apiKeysPath, JSON.stringify(apiKeys, null, 2));
 
     res.json({ message: "API key saved" });
-
   } catch (err) {
     console.error(err);
     res.status(500).send("Failed to save API key");
   }
 });
 
+// ===== BILL GENERATION FUNCTION =====
+function generateBill(user, patient, fileNo, extractedText) {
+
+  // 🔥 safety (important fix)
+  extractedText = extractedText || "";
+
+  const doc = new PDFDocument();
+
+  const fileName = `bill_${patient}_${Date.now()}.pdf`;
+
+  // 🔥 user-wise folder
+  const userDir = path.join(uploadsPath, user);
+
+  // create folder if not exists
+  if (!fs.existsSync(userDir)) {
+    fs.mkdirSync(userDir, { recursive: true });
+  }
+
+  const filePath = path.join(userDir, fileName);
+
+  doc.pipe(fs.createWriteStream(filePath));
+
+  // ===== CONTENT =====
+  doc.fontSize(20).text("Clinicea Bill", { align: "center" });
+  doc.moveDown();
+
+  doc.fontSize(14).text(`Patient Name: ${patient}`);
+  doc.text(`File No: ${fileNo}`);
+  doc.text(`Date: ${new Date().toLocaleDateString()}`);
+
+  doc.moveDown();
+
+  doc.text("Treatment Summary:");
+
+  // 🔥 safe substring (no crash)
+  doc.text(
+    extractedText.length > 0
+      ? extractedText.substring(0, 200)
+      : "Basic consultation completed"
+  );
+
+  doc.moveDown();
+
+  doc.text("Consultation Charges: ₹500");
+  doc.text("Total: ₹500");
+
+  doc.end();
+
+  // 🔥 correct URL return
+  return `http://localhost:5000/uploads/${user}/${fileName}`;
+}
+
 // ================= CHAT =================
 app.post("/chat", async (req, res) => {
   try {
     const { user, question } = req.body;
+
+    // ================= LOAD PATIENTS =================
+    let patientsData = [];
+
+    if (fs.existsSync(patientsPath)) {
+      try {
+        patientsData = JSON.parse(fs.readFileSync(patientsPath, "utf-8"));
+      } catch {
+        patientsData = [];
+      }
+    }
+
+    // current user patients
+    const userPatientsObj = patientsData.find((p) => p.user === user);
+    const userPatients = userPatientsObj ? userPatientsObj.patients : [];
 
     // ===== API KEY =====
     const apiKeys = JSON.parse(fs.readFileSync(apiKeysPath));
@@ -126,7 +195,7 @@ app.post("/chat", async (req, res) => {
       return res.json({ answer: "Please add API key in settings." });
     }
 
-    // ===== USER DOCS =====
+    // ================= LOAD DOCUMENTS (FIXED POSITION) =================
     let documents = [];
 
     if (fs.existsSync(docsPath)) {
@@ -138,12 +207,52 @@ app.post("/chat", async (req, res) => {
       }
     }
 
-    const userDocs = documents
-      .filter(doc => doc.user === user)
-      .map(doc => doc.content)
-      .join("\n");
+    // ===== USER DOCS (FULL OBJECT) =====
+    const userDocsArray = documents.filter((doc) => doc.user === user);
 
-    // ===== CLINICEA DATA =====
+    // ================= ACTION SYSTEM =================
+    const lowerQ = question.toLowerCase();
+
+    // find patient name
+    const foundPatient = userPatients.find((p) => lowerQ.includes(p.name));
+
+    // detect bill command
+if (lowerQ.includes("bill") && foundPatient) {
+
+const filePath = foundPatient.filePath;
+
+let extractedText = "";
+
+if (filePath && fs.existsSync(filePath)) {
+  const buffer = fs.readFileSync(filePath);
+  const data = await pdfParse(buffer);
+  extractedText = data.text || "";
+}
+
+  const billUrl = generateBill(
+    foundPatient.name,
+    foundPatient.fileNo,
+    extractedText
+  );
+
+  return res.json({
+    type: "action",
+    action: "new_bill",
+    patient: foundPatient.name,
+    fileNo: foundPatient.fileNo,
+    billUrl: billUrl,
+   summary: extractedText && extractedText.length > 0
+  ? extractedText.substring(0, 120)
+  : "Basic consultation completed successfully"
+  });
+}
+
+
+
+    // for Gemini (string)
+    const userDocs = userDocsArray.map((doc) => doc.content).join("\n");
+
+    // ================= CLINICEA DATA =================
     let cliniceaData = "";
 
     if (fs.existsSync(cliniceaPath)) {
@@ -151,7 +260,7 @@ app.post("/chat", async (req, res) => {
         const data = JSON.parse(fs.readFileSync(cliniceaPath, "utf-8"));
 
         cliniceaData = data
-          .map(item => `${item.title}:\n${item.content}`)
+          .map((item) => `${item.title}:\n${item.content}`)
           .join("\n\n");
       } catch {
         cliniceaData = "";
@@ -162,7 +271,7 @@ app.post("/chat", async (req, res) => {
       return res.json({ answer: "No data available." });
     }
 
-    // ===== GEMINI =====
+    // ================= GEMINI =================
     const ai = new GoogleGenAI({ apiKey });
 
     const chat = ai.chats.create({
@@ -170,77 +279,49 @@ app.post("/chat", async (req, res) => {
       config: {
         systemInstruction: `
 
-You are an intelligent AI assistant designed to answer user questions using ONLY the provided context.
+You are an AI assistant that answers questions ONLY using the provided context.
 
-You will receive two types of context:
-1. Clinicea Knowledge Base (system-level information)
-2. User Uploaded Documents (user-specific data)
+You will receive:
+1. Clinicea Knowledge Base
+2. User Uploaded Documents
 
-========================
-YOUR RESPONSIBILITIES:
-========================
+GOAL:
+Understand the content and give a clear, simple, human-friendly answer. Do NOT copy raw text.
 
-- Carefully read and understand BOTH:
-  • Clinicea Knowledge Base
-  • User Documents
+RULES:
+- Use ONLY the given context
+- Do NOT use external knowledge
+- Do NOT guess or assume anything
+- If the answer is not present, reply exactly:
+Answer not found
 
-- Combine information from both sources when needed
+PRIORITY:
+1. User Uploaded Documents (highest priority)
+2. Clinicea Knowledge Base
 
-- Provide clear, accurate, and structured answers
+If both contain relevant information → combine clearly  
+If there is a conflict → trust User Documents  
 
-- Prefer User Documents if there is any conflict with Clinicea data
-
-========================
-STRICT RULES:
-========================
-
-1. DO NOT use any external knowledge.
-2. DO NOT assume or guess anything.
-3. DO NOT generate information not present in the context.
-4. If the answer is not present in the given data, respond EXACTLY with:
-   "Answer not found"
-
-========================
 ANSWER STYLE:
-========================
+- Simple and easy to understand
+- Short sentences
+- Human-like explanation (not robotic)
+- Use bullet points or steps when helpful
+- Remove unnecessary technical wording
+- Avoid repetition
 
-- Keep answers clear and easy to understand
-- Use simple explanations
-- Use bullet points if helpful
-- Be concise but complete
-- Avoid unnecessary repetition
+FORMATTING:
+- No JSON, no code blocks
+- No markdown symbols
+- Do not copy raw document text
+- Do not wrap answer in quotes
 
-========================
-PRIORITY LOGIC:
-========================
+OUTPUT:
+Return only the final answer naturally.
+Do not mention sources or context.
 
-1. First priority → User Uploaded Documents
-2. Second priority → Clinicea Knowledge Base
-
-If answer exists partially in both → combine them properly.
-
-========================
-EDGE CASE HANDLING:
-========================
-
-- If question is vague → answer based on closest relevant context
-- If multiple answers exist → give the most relevant one
-- If conflicting data → trust User Documents over system data
-
-========================
-OUTPUT RULE:
-========================
-
-Only return the final answer.
-Do NOT mention:
-- "based on context"
-- "according to documents"
-- "Clinicea data says"
-
-Just answer naturally like a helpful assistant.
-
-`
-      }
+`,
+      },
     });
 
     // ===== FINAL PROMPT =====
@@ -256,7 +337,7 @@ ${question}
 `;
 
     const response = await chat.sendMessage({
-      message: prompt
+      message: prompt,
     });
 
     res.json({ answer: response.text });
@@ -278,7 +359,7 @@ app.get("/documents/:user", (req, res) => {
   try {
     const docs = JSON.parse(fs.readFileSync(docsPath, "utf-8"));
 
-    const userDocs = docs.filter(d => d.user === user);
+    const userDocs = docs.filter((d) => d.user === user);
 
     res.json(userDocs);
   } catch (err) {

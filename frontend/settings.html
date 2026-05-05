@@ -296,6 +296,10 @@ select:focus,input:focus{
     Save API Key
   </button>
 
+  <div id="apiAttached" style="display:none; margin-top:10px; color:#34d399; font-size:13px;">
+  API Attached ✅
+</div>
+
   <!-- STATUS -->
   <div class="status" id="statusMsg"></div>
 
@@ -393,6 +397,8 @@ async function saveKey() {
     if (res.ok) {
       showStatus('API key saved for ' + user.replace('user', 'User '), 'ok');
       document.getElementById('apikey').value = '';
+
+       document.getElementById("apiAttached").style.display = "block";
     } else {
       showStatus('Server error. Try again.', 'er');
     }
