@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Z-Chatbot</title>
+    <title>Clinicea_AI</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
       href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap"
@@ -843,12 +843,192 @@
         height: 14px;
       }
 
+      .video-card {
+        margin-top: 16px;
+        border-radius: 18px;
+        overflow: hidden;
+        background: #0f172a;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 0;
+        max-width: 520px;
+      }
+
+      .video-preview {
+        text-decoration: none;
+      }
+
+      .fake-video {
+        height: 240px;
+        border-radius: 16px;
+        background:
+          linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)),
+          url("https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1200&auto=format&fit=crop");
+        background-size: cover;
+        background-position: center;
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .play-btn {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        background: rgba(124, 106, 247, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 30px;
+        backdrop-filter: blur(6px);
+      }
+
+      .video-overlay {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        right: 20px;
+      }
+
+      .video-overlay h4 {
+        color: white;
+        font-size: 22px;
+        font-weight: 700;
+        line-height: 1.4;
+      }
+
+      .video-info {
+        margin-top: 18px;
+      }
+
+      .watch-btn {
+        display: inline-block;
+        padding: 12px 20px;
+        border-radius: 12px;
+        background: #7c6af7;
+        color: white;
+        text-decoration: none;
+        font-weight: 600;
+      }
+
+      .video-modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.88);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 99999;
+      }
+
+      .video-modal-content {
+        width: 92%;
+        height: 90%;
+        background: #000;
+        border-radius: 20px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .video-modal iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+      }
+
+      .close-video {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        z-index: 1000;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        border: none;
+        background: rgba(255, 255, 255, 0.15);
+        color: white;
+        font-size: 22px;
+        cursor: pointer;
+        backdrop-filter: blur(10px);
+      }
+
+      .fake-video {
+        position: relative;
+        height: 260px;
+        overflow: hidden;
+        cursor: pointer;
+      }
+
+      .preview-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .play-btn {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: rgba(124, 106, 247, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 34px;
+        backdrop-filter: blur(8px);
+      }
+
+      .video-overlay {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        right: 20px;
+      }
+
+      .video-overlay h4 {
+        color: white;
+        font-size: 24px;
+        font-weight: 700;
+        line-height: 1.4;
+      }
+
+      .watch-btn {
+        margin-top: 14px;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 12px;
+        background: #7c6af7;
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        width: 100%;
+        transition: 0.3s;
+      }
+
+      .watch-btn:hover {
+        background: #6d5df3;
+      }
+
       * {
         scrollbar-width: thin;
         scrollbar-color: var(--bg-3) transparent;
       }
     </style>
   </head>
+
+  <div id="videoModal" class="video-modal">
+    <div class="video-modal-content">
+      <button class="close-video" onclick="closeVideoModal()">✕</button>
+
+      <iframe id="videoFrame" src="" allowfullscreen> </iframe>
+    </div>
+  </div>
+
   <body>
     <div class="layout">
       <!-- SIDEBAR -->
@@ -869,7 +1049,7 @@
                 />
               </svg>
             </div>
-            <span class="logo-text">Z-Chatbot</span>
+            <span class="logo-text">Clinicea_AI</span>
           </div>
           <label class="upload-btn" for="pdfInput">
             <svg
@@ -929,17 +1109,21 @@
             <div class="status-dot" id="statusDot"></div>
             <span class="topbar-title" id="statusTitle">Ready to answer</span>
           </div>
-          
-          <div class="topbar-right">
 
-                <a href="dashboard.html" class="icon-btn" title="Dashboard">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <rect x="3" y="3" width="7" height="7"/>
-        <rect x="14" y="3" width="7" height="7"/>
-        <rect x="14" y="14" width="7" height="7"/>
-        <rect x="3" y="14" width="7" height="7"/>
-      </svg>
-    </a>
+          <div class="topbar-right">
+            <a href="dashboard.html" class="icon-btn" title="Dashboard">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <rect x="3" y="3" width="7" height="7" />
+                <rect x="14" y="3" width="7" height="7" />
+                <rect x="14" y="14" width="7" height="7" />
+                <rect x="3" y="14" width="7" height="7" />
+              </svg>
+            </a>
             <button
               class="icon-btn clear-btn"
               onclick="clearChat()"
@@ -1128,7 +1312,24 @@
     </div>
 
     <script>
+      function openVideoModal(url) {
+        document.getElementById("videoModal").style.display = "flex";
+
+        document.getElementById("videoFrame").src = url;
+
+        document.body.style.overflow = "hidden";
+      }
+
+      function closeVideoModal() {
+        document.getElementById("videoModal").style.display = "none";
+
+        document.getElementById("videoFrame").src = "";
+
+        document.body.style.overflow = "auto";
+      }
+
       const messagesEl = document.getElementById("messages");
+
       const chatInput = document.getElementById("chatInput");
       const sendBtn = document.getElementById("sendBtn");
       const docList = document.getElementById("docList");
@@ -1371,7 +1572,7 @@
               const message = `Sure, generating the bill for ${data.patient}...\nOpening dashboard for further actions...`;
 
               // 🔥 chatbot typing effect
-              typewriterMsg(message, () => {
+              typewriterMsg(message, { mode: "action" }, () => {
                 // 🔥 delay before opening dashboard
                 setTimeout(() => {
                   localStorage.setItem("actionData", JSON.stringify(data));
@@ -1392,20 +1593,28 @@
             // ================= NORMAL CHAT =================
             const answer = data.answer || "No response from server.";
 
-            typewriterMsg(answer, () => {
-              chatHistory.push({ role: "assistant", content: answer });
-              isBusy = false;
-              sendBtn.disabled = false;
-              setStopVisible(false);
-              setStatus("ready");
-              chatInput.focus();
-            });
+            typewriterMsg(
+              answer,
+              {
+                mode: data.video ? "video" : "text",
+                video: data.video || null,
+              },
+              () => {
+                chatHistory.push({ role: "assistant", content: answer });
+                isBusy = false;
+                sendBtn.disabled = false;
+                setStopVisible(false);
+                setStatus("ready");
+                chatInput.focus();
+              },
+            );
           }
         } catch {
           removeTyping(typingId);
           if (!stopRequested) {
             typewriterMsg(
               "Could not reach the server. Please ensure the backend is running on port 5000.",
+              null,
               () => {
                 isBusy = false;
                 sendBtn.disabled = false;
@@ -1444,35 +1653,103 @@
 
         msgGroup.appendChild(row);
         scrollBottom();
+
+        saveChats();
         return row;
       }
 
-      function typewriterMsg(text, onComplete) {
+      function typewriterMsg(text, options = {}, onComplete) {
+        const video = options.video || null;
+        const mode = options.mode || "text";
         const msgGroup = document.querySelector(".msg-group") || messagesEl;
+
         const row = document.createElement("div");
+
         row.className = "msg-row bot";
+
         row.innerHTML = `
-      <div class="msg-avatar bot-avatar">
-        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-      </div>
-      <div class="msg-bubble"></div>`;
+    <div class="msg-avatar bot-avatar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+    </div>
+
+    <div class="msg-bubble"></div>
+  `;
+
         msgGroup.appendChild(row);
 
         const target = row.querySelector(".msg-bubble");
+
         let i = 0;
+
         const speed = 12;
 
         const tick = () => {
           if (stopRequested) return;
+
           if (i < text.length) {
             target.textContent += text[i++];
+
             scrollBottom();
+
             currentTypewriterTimeout = setTimeout(tick, speed);
           } else {
             currentTypewriterTimeout = null;
+
+            // ================= VIDEO CARD =================
+
+            if (mode === "video" && video) {
+              const card = document.createElement("div");
+
+              card.className = "video-card";
+
+              const embedUrl = video.url;
+              card.innerHTML = `
+
+
+
+  <div
+    class="fake-video"
+    onclick="openVideoModal('${video.url}')"
+  >
+
+    <img
+      src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1200&auto=format&fit=crop"
+      class="preview-image"
+    >
+
+    <div class="play-btn">▶</div>
+
+    <div class="video-overlay">
+      <h4>${video.title}</h4>
+    </div>
+
+  </div>
+
+  <div class="video-info">
+
+    <button
+      class="watch-btn"
+      onclick="openVideoModal('${video.url}')"
+    >
+      Watch Demo
+    </button>
+
+  </div>
+
+</div>
+
+`;
+              target.appendChild(card);
+
+              scrollBottom();
+            }
+            saveChats();
             if (onComplete) onComplete();
           }
         };
+
         tick();
       }
 
@@ -1513,6 +1790,7 @@
         chatHistory = [];
         welcomeScreen.style.display = "";
         if (msgGroup) msgGroup.appendChild(welcomeScreen);
+        saveChats();
       }
 
       function useSuggestion(el) {
@@ -1527,6 +1805,24 @@
           .replace(/</g, "&lt;")
           .replace(/>/g, "&gt;")
           .replace(/\n/g, "<br>");
+      }
+
+      function saveChats() {
+        const msgGroup = document.querySelector(".msg-group");
+
+        if (msgGroup) {
+          localStorage.setItem(`chat_${userSelect.value}`, msgGroup.innerHTML);
+        }
+      }
+
+      function loadChats() {
+        const savedChat = localStorage.getItem(`chat_${userSelect.value}`);
+
+        if (savedChat) {
+          const msgGroup = document.querySelector(".msg-group");
+
+          msgGroup.innerHTML = savedChat;
+        }
       }
 
       function showToast(msg, type = "success") {
@@ -1565,8 +1861,8 @@
           console.error("Error loading documents", err);
         }
       }
-
       loadDocuments();
+      loadChats();
       chatInput.focus();
     </script>
   </body>

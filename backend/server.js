@@ -24,6 +24,7 @@ const patientsPath = path.join(__dirname, "../data/patients.json");
 const apiKeysPath = path.join(__dirname, "../data/apiKeys.json");
 const docsPath = path.join(__dirname, "../data/documents.json");
 const cliniceaPath = path.join(__dirname, "../data/clinicea.json");
+const videosPath = path.join(__dirname, "../data/videos.json");
 const uploadsPath = path.join(__dirname, "../uploads");
 
 const app = express();
@@ -32,6 +33,59 @@ app.use("/uploads", express.static(uploadsPath));
 // ================= APP =================
 app.use(cors({ origin: "*" }));
 app.use(express.json());
+
+//video function
+
+function findRelevantVideo(question, videos) {
+
+  const q = question.toLowerCase();
+
+  let bestVideo = null;
+  let bestScore = 0;
+
+  for (const video of videos) {
+
+    let score = 0;
+
+    // ===== TITLE MATCH =====
+    if (q.includes(video.title.toLowerCase())) {
+      score += 10;
+    }
+
+    // ===== CATEGORY MATCH =====
+    if (q.includes(video.category.toLowerCase())) {
+      score += 3;
+    }
+
+    // ===== KEYWORD MATCH =====
+    for (const keyword of video.keywords) {
+
+      const k = keyword.toLowerCase();
+
+      if (q.includes(k)) {
+        score += 5;
+      }
+
+      const words = k.split(" ");
+
+      for (const word of words) {
+
+        if (q.includes(word)) {
+          score += 1;
+        }
+      }
+    }
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestVideo = video;
+    }
+  }
+
+  return bestScore >= 3 ? bestVideo : null;
+}
+
+
 
 // ================= MULTER =================
 const storage = multer.diskStorage({
@@ -211,12 +265,48 @@ app.post("/chat", async (req, res) => {
     const userDocsArray = documents.filter((doc) => doc.user === user);
 
     // ================= ACTION SYSTEM =================
-    const lowerQ = question.toLowerCase();
+    
+    
+   
 
     // find patient name
-    const foundPatient = userPatients.find((p) => lowerQ.includes(p.name));
 
     // detect bill command
+
+
+
+
+    // for Gemini (string)
+    const userDocs = userDocsArray.map((doc) => doc.content).join("\n");
+
+    // ================= VIDEOS =================
+
+let videos = [];
+
+
+if (fs.existsSync(videosPath)) {
+
+  try {
+
+    videos = JSON.parse(
+      fs.readFileSync(videosPath, "utf-8")
+    );
+
+  } catch {
+
+    videos = [];
+  }
+}
+
+const lowerQ = question.toLowerCase();
+
+const matchedVideo = findRelevantVideo(question, videos);
+
+
+const foundPatient = userPatients.find((p) =>
+  lowerQ.includes(p.name)
+);
+
 if (lowerQ.includes("bill") && foundPatient) {
 
 const filePath = foundPatient.filePath;
@@ -229,11 +319,12 @@ if (filePath && fs.existsSync(filePath)) {
   extractedText = data.text || "";
 }
 
-  const billUrl = generateBill(
-    foundPatient.name,
-    foundPatient.fileNo,
-    extractedText
-  );
+const billUrl = generateBill(
+  user,
+  foundPatient.name,
+  foundPatient.fileNo,
+  extractedText
+);
 
   return res.json({
     type: "action",
@@ -247,10 +338,6 @@ if (filePath && fs.existsSync(filePath)) {
   });
 }
 
-
-
-    // for Gemini (string)
-    const userDocs = userDocsArray.map((doc) => doc.content).join("\n");
 
     // ================= CLINICEA DATA =================
     let cliniceaData = "";
@@ -279,46 +366,69 @@ if (filePath && fs.existsSync(filePath)) {
       config: {
         systemInstruction: `
 
-You are an AI assistant that answers questions ONLY using the provided context.
+You are a professional AI assistant for Clinicea.
 
-You will receive:
-1. Clinicea Knowledge Base
-2. User Uploaded Documents
+You answer questions using ONLY the provided context from:
 
-GOAL:
-Understand the content and give a clear, simple, human-friendly answer. Do NOT copy raw text.
-
-RULES:
-- Use ONLY the given context
-- Do NOT use external knowledge
-- Do NOT guess or assume anything
-- If the answer is not present, reply exactly:
-Answer not found
-
-PRIORITY:
-1. User Uploaded Documents (highest priority)
+1. User Uploaded Documents
 2. Clinicea Knowledge Base
+3. Clinicea Video Dataset
 
-If both contain relevant information → combine clearly  
-If there is a conflict → trust User Documents  
+PRIORITY RULES:
 
-ANSWER STYLE:
-- Simple and easy to understand
-- Short sentences
-- Human-like explanation (not robotic)
-- Use bullet points or steps when helpful
-- Remove unnecessary technical wording
-- Avoid repetition
+* User Uploaded Documents have the highest priority
+* If the user uploads documents, answer mainly from those documents
+* If both documents and Clinicea data are relevant, combine them naturally
+* If there is any conflict, trust the uploaded documents
+
+CLINICEA QUESTIONS:
+If the user asks:
+
+* how to do something in Clinicea
+* Clinicea workflows
+* billing, EMR, appointments, inventory, reports, payments, packages, etc.
+* Clinicea features or modules
+* video walkthrough related queries
+
+Then answer using the Clinicea backend knowledge base and video dataset.
+
+VIDEO HANDLING:
+
+* If a relevant Clinicea video/tutorial is available, include the video card or demo preview
+* Prefer showing the most relevant video
+* Give a short helpful explanation along with the video
+* Do not dump unnecessary details
+
+STRICT RULES:
+
+* Use ONLY the provided context
+* Do NOT use external knowledge
+* Do NOT guess or hallucinate information
+* If the answer is unavailable, reply exactly:
+  Answer not found
+
+RESPONSE STYLE:
+
+* Natural and human-like
+* Professional and clean
+* Similar to ChatGPT responses
+* Clear and easy to understand
+* Avoid robotic wording
+* Keep answers concise but useful
+* Use bullets or steps when needed
+* Avoid repetition
 
 FORMATTING:
-- No JSON, no code blocks
-- No markdown symbols
-- Do not copy raw document text
-- Do not wrap answer in quotes
 
-OUTPUT:
-Return only the final answer naturally.
-Do not mention sources or context.
+* No JSON
+* No code blocks
+* No raw copied paragraphs from documents
+* No mentioning sources or context
+* Return only the final answer naturally
+
+GOAL:
+Help users quickly understand Clinicea workflows, uploaded reports, and medical or clinic-related information in a clean conversational way.
+
 
 `,
       },
@@ -340,7 +450,19 @@ ${question}
       message: prompt,
     });
 
-    res.json({ answer: response.text });
+    res.json({
+
+  answer: response.text,
+
+  video: matchedVideo
+    ? {
+        title: matchedVideo.title,
+        url: matchedVideo.url,
+        thumbnail: matchedVideo.thumbnail,
+        description: matchedVideo.description,
+      }
+    : null,
+});
 
   } catch (err) {
     console.error(err);

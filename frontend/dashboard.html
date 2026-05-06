@@ -3,263 +3,760 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ClinicPro | Enterprise Dashboard</title>
+  <title>ClinicPro | Enterprise Health Dashboard</title>
   <!-- Google Fonts & Icons -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
+    /* ---------- GLOBAL VARIABLES & RESET ---------- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      transition: background-color 0.25s ease, color 0.2s ease;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+    }
+
+    /* Light theme (default) */
     :root {
       --primary: #4f46e5;
+      --primary-light: #6366f1;
       --primary-dark: #4338ca;
       --success: #10b981;
-      --bg: #f8fafc;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --gray-50: #f9fafb;
+      --gray-100: #f1f5f9;
+      --gray-200: #e2e8f0;
+      --gray-300: #cbd5e1;
+      --gray-600: #475569;
+      --gray-700: #334155;
+      --gray-800: #1e293b;
+      --gray-900: #0f172a;
+      --bg-primary: #f8fafc;
       --card-bg: #ffffff;
-      --text-main: #0f172a;
-      --text-muted: #64748b;
-      --border: #e2e8f0;
-      --radius: 12px;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --border-light: #eef2ff;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.03), 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+      --radius-md: 12px;
+      --radius-xl: 20px;
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    body.dark {
+      --primary: #818cf8;
+      --primary-light: #a5b4fc;
+      --primary-dark: #6366f1;
+      --bg-primary: #0f172a;
+      --card-bg: #1e293b;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --border-light: #334155;
+      --gray-100: #1e293b;
+      --gray-200: #334155;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+    }
 
-    body { background-color: var(--bg); color: var(--text-main); -webkit-font-smoothing: antialiased; }
-
-    /* HEADER */
+    /* Layout */
     .header {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 1rem 5%; background: rgba(255, 255, 255, 0.8);
-      backdrop-filter: blur(10px); border-bottom: 1px solid var(--border);
-      position: sticky; top: 0; z-index: 50;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 5%;
+      background: var(--card-bg);
+      backdrop-filter: blur(0px);
+      border-bottom: 1px solid var(--border-light);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: var(--shadow-sm);
     }
 
-    .brand { font-size: 1.4rem; font-weight: 800; color: var(--primary); letter-spacing: -0.02em; display: flex; align-items: center; gap: 8px; }
+    .brand {
+      font-size: 1.6rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      letter-spacing: -0.02em;
+    }
 
-    .actions { display: flex; gap: 12px; }
+    .brand i {
+      background: none;
+      -webkit-background-clip: unset;
+      color: var(--primary);
+      background: transparent;
+    }
 
-    /* BUTTONS */
+    .actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    /* enhanced buttons */
     .btn {
-      padding: 0.6rem 1.2rem; border-radius: 8px; border: none;
-      cursor: pointer; font-weight: 600; font-size: 0.875rem;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      display: inline-flex; align-items: center; gap: 8px;
+      padding: 0.6rem 1.2rem;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.875rem;
+      transition: all 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: transparent;
     }
-    .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2); }
-    .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
-    
-    .btn-secondary { background: var(--success); color: white; }
-    .btn-secondary:hover { opacity: 0.9; transform: translateY(-1px); }
 
-    .btn-outline { background: white; border: 1px solid var(--border); color: var(--text-main); }
-    .btn-outline:hover { background: #f1f5f9; border-color: #cbd5e1; }
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 4px 8px -2px rgba(79, 70, 229, 0.25);
+    }
 
-    /* MAIN */
-    .main { padding: 2.5rem 5%; max-width: 1400px; margin: 0 auto; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
+    }
 
-    /* CARDS */
+    .btn-success {
+      background: var(--success);
+      color: white;
+    }
+
+    .btn-success:hover {
+      filter: brightness(1.05);
+      transform: translateY(-2px);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1.5px solid var(--border-light);
+      color: var(--text-primary);
+    }
+
+    .btn-outline:hover {
+      background: var(--gray-100);
+      border-color: var(--primary);
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #dc2626;
+      transform: translateY(-1px);
+    }
+
+    /* Theme Toggle */
+    .theme-toggle {
+      background: var(--gray-100);
+      border-radius: 40px;
+      width: 42px;
+      height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: 1px solid var(--border-light);
+      transition: all 0.2s;
+    }
+
+    .theme-toggle:hover {
+      background: var(--gray-200);
+      transform: scale(0.96);
+    }
+
+    .main {
+      padding: 2.5rem 5%;
+      max-width: 1440px;
+      margin: 0 auto;
+    }
+
+    /* stats row */
+    .stats-row {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 2.5rem;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      border-radius: var(--radius-xl);
+      padding: 1.25rem 1.8rem;
+      flex: 1;
+      min-width: 160px;
+      border: 1px solid var(--border-light);
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s;
+    }
+
+    .stat-title {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+    }
+
+    .stat-number {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1.2;
+    }
+
+    /* Grid */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 1.8rem;
+    }
+
+    /* Cards enhanced */
     .card {
-      background: var(--card-bg); border-radius: var(--radius); padding: 1.5rem;
-      border: 1px solid var(--border); transition: all 0.3s ease;
-      display: flex; flex-direction: column; height: 100%;
+      background: var(--card-bg);
+      border-radius: var(--radius-xl);
+      padding: 1.5rem;
+      border: 1px solid var(--border-light);
+      transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
     }
-    .card:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05); border-color: var(--primary); }
 
-    .card-header { margin-bottom: 1rem; }
-    .card h3 { font-size: 1.15rem; font-weight: 700; color: var(--text-main); margin-bottom: 4px; }
-    .file-badge { font-size: 0.7rem; font-weight: 700; color: var(--primary); background: #eef2ff; padding: 4px 8px; border-radius: 6px; text-transform: uppercase; }
-
-    .summary-text { font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1.5rem; flex-grow: 1; }
-
-    /* FULL SCREEN OVERLAY */
-    .pdf-overlay {
-      position: fixed; inset: 0; background: #0f172a; z-index: 1000;
-      display: none; flex-direction: column;
+    .card:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--primary-light);
     }
-    .pdf-header {
-      padding: 0.8rem 2rem; background: #1e293b; color: white;
-      display: flex; justify-content: space-between; align-items: center;
-    }
-    .pdf-frame { flex-grow: 1; width: 100%; border: none; background: #f1f5f9; }
 
-    /* MODAL */
+    .card-header {
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .file-badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      background: rgba(79, 70, 229, 0.12);
+      color: var(--primary);
+      padding: 5px 12px;
+      border-radius: 30px;
+      letter-spacing: 0.3px;
+      backdrop-filter: blur(2px);
+    }
+
+    .card h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-top: 12px;
+      margin-bottom: 6px;
+    }
+
+    .summary-text {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-bottom: 1.5rem;
+      flex-grow: 1;
+      background: var(--gray-50);
+      padding: 12px;
+      border-radius: 14px;
+      border-left: 3px solid var(--primary);
+    }
+
+    body.dark .summary-text {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .card-footer {
+      margin-top: auto;
+    }
+
+    /* Modal & Overlay */
     .modal-overlay {
-      position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4);
-      backdrop-filter: blur(8px); display: none; justify-content: center; align-items: center; z-index: 100;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(12px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
     }
+
     .modal-content {
-      background: white; width: 95%; max-width: 480px; padding: 2rem;
-      border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-      animation: slideUp 0.3s ease-out;
+      background: var(--card-bg);
+      width: 95%;
+      max-width: 520px;
+      padding: 2rem;
+      border-radius: 28px;
+      box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.4);
+      animation: slideUp 0.25s ease-out;
+      border: 1px solid var(--border-light);
     }
-    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-    .form-group { margin-bottom: 1.25rem; }
-    label { display: block; font-size: 0.8rem; font-weight: 700; margin-bottom: 6px; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.02em; }
-    input, textarea {
-      width: 100%; padding: 0.8rem; border-radius: 8px; border: 1.5px solid var(--border);
-      font-size: 1rem; outline: none; transition: all 0.2s;
+    @keyframes slideUp {
+      from {
+        transform: translateY(30px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
     }
-    input:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); }
-    textarea { min-height: 120px; }
 
-    .empty-state { text-align: center; padding: 5rem 2rem; grid-column: 1/-1; color: var(--text-muted); }
+    .form-group {
+      margin-bottom: 1.4rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      padding: 0.85rem 1rem;
+      border-radius: 14px;
+      border: 1.5px solid var(--border-light);
+      background: var(--card-bg);
+      color: var(--text-primary);
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    input:focus,
+    textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      grid-column: 1/-1;
+      background: var(--card-bg);
+      border-radius: 2rem;
+      border: 1px dashed var(--border-light);
+    }
+
+    /* PDF Viewer Overlay */
+    .pdf-overlay {
+      position: fixed;
+      inset: 0;
+      background: #0a0f1c;
+      z-index: 1100;
+      display: none;
+      flex-direction: column;
+    }
+
+    .pdf-header {
+      padding: 0.9rem 2rem;
+      background: #111827;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .pdf-frame {
+      flex-grow: 1;
+      width: 100%;
+      border: none;
+      background: #eef2ff;
+    }
+
+    /* toast like alert area */
+    .toast-notify {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--card-bg);
+      border-left: 5px solid var(--primary);
+      padding: 12px 20px;
+      border-radius: 16px;
+      box-shadow: var(--shadow-lg);
+      z-index: 1200;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      animation: fadeInUp 0.3s ease;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
   </style>
 </head>
+
 <body>
+  <header class="header">
+    <div class="brand">
+      <i data-lucide="heart-pulse"></i>
+      <span>ClinicPro</span>
+    </div>
+    <div class="actions">
+      <div class="theme-toggle" id="themeToggleBtn">
+        <i data-lucide="moon" id="themeIcon"></i>
+      </div>
+      <button class="btn btn-primary" onclick="toggleModal(true)">
+        <i data-lucide="file-plus"></i> New Bill
+      </button>
+      <button class="btn btn-success" id="fakePaymentBtn">
+        <i data-lucide="credit-card"></i> New Payment
+      </button>
+      <button class="btn btn-outline" id="clearAllBillsBtn" style="border-color: var(--danger); color: var(--danger);">
+        <i data-lucide="trash-2"></i> Clear Bills
+      </button>
+    </div>
+  </header>
 
-<header class="header">
-  <div class="brand"><i data-lucide="activity"></i> ClinicPro</div>
-  <div class="actions">
-    <button class="btn btn-primary" onclick="toggleModal(true)"><i data-lucide="plus"></i> New Bill</button>
-    <button class="btn btn-secondary"><i data-lucide="credit-card"></i> New Payment</button>
-  </div>
-</header>
+  <main class="main">
+    <div class="stats-row" id="statsRow">
+      <div class="stat-card">
+        <div class="stat-title">Total Bills</div>
+        <div class="stat-number" id="totalCount">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">Active Patients</div>
+        <div class="stat-number" id="patientCount">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">Ready Bills</div>
+        <div class="stat-number" id="readyCount">0</div>
+      </div>
+    </div>
+    <div id="billContainer" class="grid"></div>
+  </main>
 
-<main class="main">
-  <div id="billContainer" class="grid">
-    <!-- Dynamic Cards Render Here -->
-  </div>
-</main>
-
-<!-- PDF Full Screen Overlay -->
-<div id="pdfOverlay" class="pdf-overlay">
-  <div class="pdf-header">
-    <div style="display: flex; align-items: center; gap: 10px;">
+  <!-- PDF OVERLAY -->
+  <div id="pdfOverlay" class="pdf-overlay">
+    <div class="pdf-header">
+      <div style="display: flex; align-items: center; gap: 12px;">
         <i data-lucide="file-text"></i>
-        <span id="pdfTitle" style="font-weight: 600;">Document Viewer</span>
+        <span id="pdfTitle" style="font-weight: 600;">Medical Bill Viewer</span>
+      </div>
+      <button class="btn btn-outline" id="closePdfBtn" style="background: #ef4444; color: white; border: none;">
+        <i data-lucide="x"></i> Close
+      </button>
     </div>
-    <button class="btn btn-outline" style="background: #ef4444; color: white; border: none;" onclick="closePDF()">
-        <i data-lucide="x"></i> Close Viewer
-    </button>
+    <iframe id="pdfFrame" class="pdf-frame" title="Bill Document"></iframe>
   </div>
-  <iframe id="pdfFrame" class="pdf-frame"></iframe>
-</div>
 
-<!-- Modal -->
-<div id="modalOverlay" class="modal-overlay">
-  <div class="modal-content">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-      <h2 style="font-weight: 800; font-size: 1.5rem;">New Medical Bill</h2>
-      <button onclick="toggleModal(false)" style="background: none; border: none; cursor: pointer; color: var(--text-muted);"><i data-lucide="x"></i></button>
+  <!-- NEW BILL MODAL -->
+  <div id="modalOverlay" class="modal-overlay">
+    <div class="modal-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.8rem;">
+        <h2 style="font-weight: 800; font-size: 1.7rem; background: linear-gradient(135deg, var(--primary), var(--primary-light)); -webkit-background-clip: text; background-clip: text; color: transparent;">Create Bill</h2>
+        <button onclick="toggleModal(false)" style="background: var(--gray-100); border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+          <i data-lucide="x" style="color: var(--text-secondary);"></i>
+        </button>
+      </div>
+      <div class="form-group">
+        <label>Patient Full Name</label>
+        <input type="text" id="patientName" placeholder="e.g., Olivia Chen, Michael Rodriguez">
+      </div>
+      <div class="form-group">
+        <label>File Number / UHID</label>
+        <input type="text" id="fileNo" placeholder="CLP-2026-0XXX">
+      </div>
+      <div class="form-group">
+        <label>Medical Summary / Diagnosis</label>
+        <textarea id="summary" placeholder="Enter diagnosis, procedures, or billing notes..."></textarea>
+      </div>
+      <button class="btn btn-primary" style="width: 100%; justify-content: center; padding: 1rem; font-weight: 700;" onclick="saveBill()">
+        <i data-lucide="save"></i> Generate & Save Bill
+      </button>
     </div>
-    
-    <div class="form-group">
-      <label>Patient Full Name</label>
-      <input type="text" id="patientName" placeholder="e.g. Aman Kumar">
-    </div>
-
-    <div class="form-group">
-      <label>File Number</label>
-      <input type="text" id="fileNo" placeholder="REG-2026-001">
-    </div>
-
-    <div class="form-group">
-      <label>Medical Summary</label>
-      <textarea id="summary" placeholder="Enter diagnosis or billing notes..."></textarea>
-    </div>
-
-    <button class="btn btn-primary" style="width: 100%; justify-content: center; padding: 1rem; margin-top: 0.5rem;" onclick="saveBill()">
-      Generate & Save Bill
-    </button>
   </div>
-</div>
 
-<script>
-  let bills = JSON.parse(localStorage.getItem("bills")) || [];
+  <script>
+    // ---------- GLOBALS & STORAGE ----------
+    let bills = JSON.parse(localStorage.getItem("bills")) || [];
 
-  function toggleModal(show) {
-    const modal = document.getElementById("modalOverlay");
-    modal.style.display = show ? "flex" : "none";
-    if(!show) clearForm();
-  }
-
-  function clearForm() {
-    document.getElementById("patientName").value = "";
-    document.getElementById("fileNo").value = "";
-    document.getElementById("summary").value = "";
-  }
-
-  function saveBill() {
-    const name = document.getElementById("patientName").value;
-    const file = document.getElementById("fileNo").value;
-    const desc = document.getElementById("summary").value;
-
-    if(!name || !file) {
-      alert("Please fill in Name and File Number");
-      return;
-    }
-
-    const newBill = {
-      id: Date.now(),
-      patient: name,
-      fileNo: file,
-      summary: desc,
-      billUrl: "bill_1_1777980929511.pdf" 
-    };
-
-    bills.unshift(newBill);
-    localStorage.setItem("bills", JSON.stringify(bills));
-    
-    renderAll();
-    toggleModal(false);
-  }
-
-  function renderAll() {
-    const container = document.getElementById("billContainer");
-    container.innerHTML = "";
-
-    if (bills.length === 0) {
-      container.innerHTML = `
-        <div class="empty-state">
-          <i data-lucide="folder-open" style="width: 48px; height: 48px; margin-bottom: 1rem; opacity: 0.5;"></i>
-          <p>No billing history found. Create your first bill to get started.</p>
-        </div>`;
+    // Theme handling
+    function setTheme(theme) {
+      if (theme === 'dark') {
+        document.body.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+        const icon = document.getElementById('themeIcon');
+        if (icon) icon.setAttribute('data-lucide', 'sun');
+      } else {
+        document.body.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+        const icon = document.getElementById('themeIcon');
+        if (icon) icon.setAttribute('data-lucide', 'moon');
+      }
       lucide.createIcons();
-      return;
     }
 
-    bills.forEach(bill => {
-      const card = document.createElement("div");
-      card.className = "card";
-      card.innerHTML = `
-        <div class="card-header">
-          <span class="file-badge">ID: ${bill.fileNo}</span>
-          <h3 style="margin-top: 10px;">${bill.patient}</h3>
-        </div>
-        <p class="summary-text">${bill.summary || 'No detailed summary provided for this record.'}</p>
-        <div class="card-footer">
-          <button class="btn btn-outline" style="width: 100%; justify-content: center;" onclick="viewPDF('${bill.billUrl}', '${bill.patient}')">
-            <i data-lucide="eye"></i> View Full Bill
-          </button>
-        </div>
-      `;
-      container.appendChild(card);
+    function initTheme() {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'dark') setTheme('dark');
+      else setTheme('light');
+      const toggleBtn = document.getElementById('themeToggleBtn');
+      if (toggleBtn) {
+        toggleBtn.addEventListener('click', () => {
+          const isDark = document.body.classList.contains('dark');
+          setTheme(isDark ? 'light' : 'dark');
+          showToast(isDark ? 'Light mode activated ☀️' : 'Dark mode enabled 🌙', 'info');
+        });
+      }
+    }
+
+    // Auto action from localStorage (preserve original logic)
+    const actionData = JSON.parse(localStorage.getItem("actionData"));
+    if (actionData && actionData.action === "new_bill") {
+      setTimeout(() => {
+        toggleModal(true);
+        document.getElementById("patientName").value = actionData.patient || "";
+        document.getElementById("fileNo").value = actionData.fileNo || "";
+        document.getElementById("summary").value = actionData.summary || "";
+        const newBillBtn = document.querySelector(".actions .btn-primary");
+        if (newBillBtn) {
+          const originalHTML = newBillBtn.innerHTML;
+          newBillBtn.innerHTML = '<i data-lucide="loader"></i> Generating...';
+          newBillBtn.disabled = true;
+          lucide.createIcons();
+          setTimeout(() => {
+            const alreadyExists = bills.some(b => b.billUrl === actionData.billUrl);
+            if (!alreadyExists && actionData.billUrl) {
+              bills.unshift({
+                id: Date.now(),
+                patient: actionData.patient,
+                fileNo: actionData.fileNo,
+                summary: actionData.summary,
+                billUrl: actionData.billUrl
+              });
+              localStorage.setItem("bills", JSON.stringify(bills));
+            }
+            renderAll();
+            newBillBtn.innerHTML = originalHTML;
+            newBillBtn.disabled = false;
+            lucide.createIcons();
+            toggleModal(false);
+            localStorage.removeItem("actionData");
+            showToast(`Bill created for ${actionData.patient}`, "success");
+          }, 2200);
+        }
+      }, 50);
+    }
+
+    // Helper functions
+    function showToast(msg, type = 'info') {
+      let toast = document.querySelector('.toast-notify');
+      if (toast) toast.remove();
+      const div = document.createElement('div');
+      div.className = 'toast-notify';
+      const iconName = type === 'success' ? 'check-circle' : (type === 'error' ? 'alert-circle' : 'info');
+      div.innerHTML = `<i data-lucide="${iconName}" style="color: var(--primary);"></i><span>${msg}</span>`;
+      document.body.appendChild(div);
+      lucide.createIcons();
+      setTimeout(() => {
+        div.style.opacity = '0';
+        setTimeout(() => div.remove(), 300);
+      }, 3000);
+    }
+
+    function toggleModal(show) {
+      const modal = document.getElementById("modalOverlay");
+      modal.style.display = show ? "flex" : "none";
+      if (!show) clearForm();
+    }
+
+    function clearForm() {
+      document.getElementById("patientName").value = "";
+      document.getElementById("fileNo").value = "";
+      document.getElementById("summary").value = "";
+    }
+
+    function saveBill() {
+      const name = document.getElementById("patientName").value.trim();
+      const file = document.getElementById("fileNo").value.trim();
+      const desc = document.getElementById("summary").value;
+      if (!name || !file) {
+        showToast("Please fill Patient Name and File Number", "error");
+        return;
+      }
+      const demoPDFUrl = `bill_${Date.now()}_temp.pdf`;
+      const newBill = {
+        id: Date.now(),
+        patient: name,
+        fileNo: file,
+        summary: desc || "No medical notes provided.",
+        billUrl: demoPDFUrl
+      };
+      bills.unshift(newBill);
+      localStorage.setItem("bills", JSON.stringify(bills));
+      renderAll();
+      toggleModal(false);
+      showToast(`Bill created for ${name} (${file})`, "success");
+    }
+
+    // Clear all bills with double-check
+    function clearAllBills() {
+      if (bills.length === 0) {
+        showToast("No bills to clear", "info");
+        return;
+      }
+      if (confirm("⚠️ PERMANENT ACTION: Are you sure you want to delete ALL billing records? This cannot be undone.")) {
+        bills = [];
+        localStorage.setItem("bills", JSON.stringify(bills));
+        renderAll();
+        showToast("All medical bills have been cleared", "success");
+      }
+    }
+
+    // View pdf
+    function viewPDF(url, patientName) {
+      let finalUrl = url;
+      if (!url || url === "bill_1_1777980929511.pdf" || url === "bill_undefined_temp.pdf") {
+        finalUrl = "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
+      }
+      document.getElementById("pdfTitle").innerText = `Billing Report · ${patientName}`;
+      document.getElementById("pdfFrame").src = finalUrl;
+      document.getElementById("pdfOverlay").style.display = "flex";
+      document.body.style.overflow = "hidden";
+    }
+
+    function closePDF() {
+      document.getElementById("pdfOverlay").style.display = "none";
+      document.body.style.overflow = "auto";
+      document.getElementById("pdfFrame").src = "";
+    }
+
+    function updateStats() {
+      const total = bills.length;
+      const uniquePatients = new Set(bills.map(b => b.patient)).size;
+      const ready = bills.filter(b => b.billUrl && b.billUrl.includes(".pdf")).length;
+      document.getElementById("totalCount").innerText = total;
+      document.getElementById("patientCount").innerText = uniquePatients;
+      document.getElementById("readyCount").innerText = ready;
+    }
+
+    function renderAll() {
+      const container = document.getElementById("billContainer");
+      container.innerHTML = "";
+      updateStats();
+      if (bills.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <i data-lucide="folder-heart" style="width: 56px; height: 56px; margin-bottom: 1.2rem; opacity: 0.6; color: var(--primary);"></i>
+            <h3 style="margin-bottom: 8px;">No billing records</h3>
+            <p style="color: var(--text-secondary);">Create your first medical bill to get started.</p>
+          </div>`;
+        lucide.createIcons();
+        return;
+      }
+      bills.forEach(bill => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <div class="card-header">
+            <span class="file-badge"><i data-lucide="file-badge" style="width: 12px; height: 12px;"></i> ${bill.fileNo}</span>
+            <span style="font-size: 11px; background: var(--gray-100); padding: 4px 10px; border-radius: 30px;">📄 active</span>
+          </div>
+          <h3>${escapeHtml(bill.patient)}</h3>
+          <p class="summary-text">${escapeHtml(bill.summary || 'No detailed summary provided.')}</p>
+          <div class="card-footer">
+            <button class="btn btn-outline" style="width: 100%; justify-content: center; gap: 8px;" onclick="viewPDF('${bill.billUrl}', '${escapeHtml(bill.patient)}')">
+              <i data-lucide="file-search"></i> Review Full Bill
+            </button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+      lucide.createIcons();
+    }
+
+    function escapeHtml(str) {
+      if (!str) return "";
+      return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+      }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+        return c;
+      });
+    }
+
+    // Attach event listeners after DOM ready
+    window.addEventListener('DOMContentLoaded', () => {
+      initTheme();
+      renderAll();
+      // Add clear button event
+      const clearBtn = document.getElementById('clearAllBillsBtn');
+      if (clearBtn) clearBtn.addEventListener('click', clearAllBills);
+      // fake payment button just for demo delight
+      const payBtn = document.getElementById('fakePaymentBtn');
+      if (payBtn) {
+        payBtn.addEventListener('click', () => {
+          showToast("💳 Payment portal opens soon — simulated transaction", "info");
+        });
+      }
+      const closePdf = document.getElementById('closePdfBtn');
+      if (closePdf) closePdf.addEventListener('click', closePDF);
+      window.onclick = function(event) {
+        const modal = document.getElementById("modalOverlay");
+        if (event.target === modal) toggleModal(false);
+      };
+      // attach manual pdf close on overlay click escape
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          if (document.getElementById("pdfOverlay").style.display === "flex") closePDF();
+          if (document.getElementById("modalOverlay").style.display === "flex") toggleModal(false);
+        }
+      });
     });
-    lucide.createIcons();
-  }
 
-  function viewPDF(url, patientName) {
-    document.getElementById("pdfTitle").innerText = `Billing Report: ${patientName}`;
-    document.getElementById("pdfFrame").src = url;
-    document.getElementById("pdfOverlay").style.display = "flex";
-    document.body.style.overflow = "hidden"; // Disable scroll
-  }
-
-  function closePDF() {
-    document.getElementById("pdfOverlay").style.display = "none";
-    document.body.style.overflow = "auto"; // Enable scroll
-    document.getElementById("pdfFrame").src = "";
-  }
-
-  // Initial Render
-  renderAll();
-  lucide.createIcons();
-
-  window.onclick = function(event) {
-    const modal = document.getElementById("modalOverlay");
-    if (event.target == modal) toggleModal(false);
-  }
-</script>
-
+    // expose global functions for inline onclick
+    window.toggleModal = toggleModal;
+    window.saveBill = saveBill;
+    window.viewPDF = viewPDF;
+    window.closePDF = closePDF;
+    window.clearAllBills = clearAllBills;
+  </script>
 </body>
 </html>
