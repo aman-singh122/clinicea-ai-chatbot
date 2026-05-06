@@ -539,6 +539,25 @@
         transition: background 0.25s;
       }
 
+      .msg-bubble strong {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.msg-bubble ul {
+  margin-top: 14px;
+  padding-left: 22px;
+}
+
+.msg-bubble li {
+  margin-bottom: 12px;
+  line-height: 1.8;
+  color: var(--text-1);
+}
+
+.msg-bubble br {
+  line-height: 2;
+}
       /* ── TYPING ── */
       .typing-row {
         display: flex;
@@ -1689,7 +1708,11 @@
           if (stopRequested) return;
 
           if (i < text.length) {
-            target.textContent += text[i++];
+            target.innerHTML = formatResponse(
+              escHtml(text.substring(0, i + 1)),
+            );
+
+            i++;
 
             scrollBottom();
 
@@ -1797,6 +1820,24 @@
         chatInput.value = el.textContent;
         chatInput.dispatchEvent(new Event("input"));
         sendMessage();
+      }
+
+      function formatResponse(text) {
+        return (
+          text
+
+            // Bold
+            .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+
+            // Bullet points
+            .replace(/^\* (.*)$/gm, "<li>$1</li>")
+
+            // Wrap bullets in UL
+            .replace(/(<li>.*<\/li>)/gs, "<ul>$1</ul>")
+
+            // Line breaks
+            .replace(/\n/g, "<br>")
+        );
       }
 
       function escHtml(s) {
