@@ -7,7 +7,9 @@ import { GoogleGenAI } from "@google/genai";
 import path from "path";
 import { fileURLToPath } from "url";
 import { createRequire } from "module";
+import analyticsRoutes from "./routes/analyticsRoutes.js";
 
+import detectIntent from "./utils/detectIntent.js";
 // ================= DIR SETUP =================
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -28,23 +30,23 @@ const videosPath = path.join(__dirname, "../data/videos.json");
 const uploadsPath = path.join(__dirname, "../uploads");
 
 const app = express();
+app.use("/graphs", express.static("backend/graphs"));
 app.use("/uploads", express.static(uploadsPath));
 
 // ================= APP =================
 app.use(cors({ origin: "*" }));
 app.use(express.json());
+app.use("/api", analyticsRoutes);
 
 //video function
 
 function findRelevantVideo(question, videos) {
-
   const q = question.toLowerCase();
 
   let bestVideo = null;
   let bestScore = 0;
 
   for (const video of videos) {
-
     let score = 0;
 
     // ===== TITLE MATCH =====
@@ -59,7 +61,6 @@ function findRelevantVideo(question, videos) {
 
     // ===== KEYWORD MATCH =====
     for (const keyword of video.keywords) {
-
       const k = keyword.toLowerCase();
 
       if (q.includes(k)) {
@@ -69,7 +70,6 @@ function findRelevantVideo(question, videos) {
       const words = k.split(" ");
 
       for (const word of words) {
-
         if (q.includes(word)) {
           score += 1;
         }
@@ -84,8 +84,6 @@ function findRelevantVideo(question, videos) {
 
   return bestScore >= 3 ? bestVideo : null;
 }
-
-
 
 // ================= MULTER =================
 const storage = multer.diskStorage({
@@ -171,7 +169,6 @@ app.post("/save-api-key", (req, res) => {
 
 // ===== BILL GENERATION FUNCTION =====
 function generateBill(user, patient, fileNo, extractedText) {
-
   // 🔥 safety (important fix)
   extractedText = extractedText || "";
 
@@ -207,7 +204,7 @@ function generateBill(user, patient, fileNo, extractedText) {
   doc.text(
     extractedText.length > 0
       ? extractedText.substring(0, 200)
-      : "Basic consultation completed"
+      : "Basic consultation completed",
   );
 
   doc.moveDown();
@@ -224,8 +221,13 @@ function generateBill(user, patient, fileNo, extractedText) {
 // ================= CHAT =================
 app.post("/chat", async (req, res) => {
   try {
-    const { user, question } = req.body;
+    const { user, query } = req.body;
 
+    const question = query;
+
+    const intent = detectIntent(question);
+
+    console.log(intent);
     // ================= LOAD PATIENTS =================
     let patientsData = [];
 
@@ -265,79 +267,62 @@ app.post("/chat", async (req, res) => {
     const userDocsArray = documents.filter((doc) => doc.user === user);
 
     // ================= ACTION SYSTEM =================
-    
-    
-   
 
     // find patient name
 
     // detect bill command
-
-
-
 
     // for Gemini (string)
     const userDocs = userDocsArray.map((doc) => doc.content).join("\n");
 
     // ================= VIDEOS =================
 
-let videos = [];
+    let videos = [];
 
+    if (fs.existsSync(videosPath)) {
+      try {
+        videos = JSON.parse(fs.readFileSync(videosPath, "utf-8"));
+      } catch {
+        videos = [];
+      }
+    }
 
-if (fs.existsSync(videosPath)) {
+    const lowerQ = question.toLowerCase();
 
-  try {
+    const matchedVideo = findRelevantVideo(question, videos);
 
-    videos = JSON.parse(
-      fs.readFileSync(videosPath, "utf-8")
-    );
+    const foundPatient = userPatients.find((p) => lowerQ.includes(p.name));
 
-  } catch {
+    if (lowerQ.includes("bill") && foundPatient) {
+      const filePath = foundPatient.filePath;
 
-    videos = [];
-  }
-}
+      let extractedText = "";
 
-const lowerQ = question.toLowerCase();
+      if (filePath && fs.existsSync(filePath)) {
+        const buffer = fs.readFileSync(filePath);
+        const data = await pdfParse(buffer);
+        extractedText = data.text || "";
+      }
 
-const matchedVideo = findRelevantVideo(question, videos);
+      const billUrl = generateBill(
+        user,
+        foundPatient.name,
+        foundPatient.fileNo,
+        extractedText,
+      );
 
-
-const foundPatient = userPatients.find((p) =>
-  lowerQ.includes(p.name)
-);
-
-if (lowerQ.includes("bill") && foundPatient) {
-
-const filePath = foundPatient.filePath;
-
-let extractedText = "";
-
-if (filePath && fs.existsSync(filePath)) {
-  const buffer = fs.readFileSync(filePath);
-  const data = await pdfParse(buffer);
-  extractedText = data.text || "";
-}
-
-const billUrl = generateBill(
-  user,
-  foundPatient.name,
-  foundPatient.fileNo,
-  extractedText
-);
-
-  return res.json({
-    type: "action",
-    action: "new_bill",
-    patient: foundPatient.name,
-    fileNo: foundPatient.fileNo,
-    billUrl: billUrl,
-   summary: extractedText && extractedText.length > 0
-  ? extractedText.substring(0, 120)
-  : "Basic consultation completed successfully"
-  });
-}
-
+      return res.json({
+        type: "action",
+        action: "new_bill",
+        patient: foundPatient.name,
+        fileNo: foundPatient.fileNo,
+        billUrl: billUrl,
+        summary:
+          extractedText && extractedText.length > 0
+            ? extractedText.substring(0, 120)
+            : "Basic consultation completed successfully",
+      });
+    }
 
     // ================= CLINICEA DATA =================
     let cliniceaData = "";
@@ -356,6 +341,31 @@ const billUrl = generateBill(
 
     if (!userDocs && !cliniceaData) {
       return res.json({ answer: "No data available." });
+    }
+    // ================= ANALYTICS ROUTING =================
+
+    if (intent.analytics && !intent.clinicea && !intent.video) {
+      const analyticsResponse = await fetch(
+        "http://localhost:5000/api/analytics",
+
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json",
+          },
+
+          body: JSON.stringify({
+            user,
+
+            query: question,
+          }),
+        },
+      );
+
+      const analyticsData = await analyticsResponse.json();
+
+      return res.json(analyticsData);
     }
 
     // ================= GEMINI =================
@@ -450,9 +460,18 @@ ${question}
       message: prompt,
     });
 
-    res.json({
+    console.log(JSON.stringify(response, null, 2));
 
-  answer: response.text,
+   res.json({
+
+  type: matchedVideo ? "video" : "text",
+
+answer:
+    response.candidates?.[0]?.content?.parts?.[0]?.text ||
+
+    response.text ||
+
+    "Answer not found",
 
   video: matchedVideo
     ? {
@@ -463,7 +482,6 @@ ${question}
       }
     : null,
 });
-
   } catch (err) {
     console.error(err);
     res.status(500).json({ answer: "Api key not valid" });

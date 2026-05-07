@@ -540,24 +540,24 @@
       }
 
       .msg-bubble strong {
-  color: #ffffff;
-  font-weight: 700;
-}
+        color: #ffffff;
+        font-weight: 700;
+      }
 
-.msg-bubble ul {
-  margin-top: 14px;
-  padding-left: 22px;
-}
+      .msg-bubble ul {
+        margin-top: 14px;
+        padding-left: 22px;
+      }
 
-.msg-bubble li {
-  margin-bottom: 12px;
-  line-height: 1.8;
-  color: var(--text-1);
-}
+      .msg-bubble li {
+        margin-bottom: 12px;
+        line-height: 1.8;
+        color: var(--text-1);
+      }
 
-.msg-bubble br {
-  line-height: 2;
-}
+      .msg-bubble br {
+        line-height: 2;
+      }
       /* ── TYPING ── */
       .typing-row {
         display: flex;
@@ -1575,11 +1575,15 @@
         try {
           const res = await fetch("http://localhost:5000/chat", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+
+            headers: {
+              "Content-Type": "application/json",
+            },
+
             body: JSON.stringify({
               user: userSelect.value,
-              question: text,
-              document: activeDoc,
+
+              query: text,
             }),
           });
           const data = await res.json();
@@ -1610,23 +1614,99 @@
             }
 
             // ================= NORMAL CHAT =================
-            const answer = data.answer || "No response from server.";
+            // GRAPH RESPONSE
+            if (data.type === "graph") {
+              const graphMessage = `
+    ${data.message}
 
-            typewriterMsg(
-              answer,
-              {
-                mode: data.video ? "video" : "text",
-                video: data.video || null,
-              },
-              () => {
-                chatHistory.push({ role: "assistant", content: answer });
-                isBusy = false;
-                sendBtn.disabled = false;
-                setStopVisible(false);
-                setStatus("ready");
-                chatInput.focus();
-              },
-            );
+    <br><br>
+
+    <img
+      src="http://localhost:5000${data.graphUrl}"
+      style="
+        width:100%;
+        max-width:500px;
+        border-radius:16px;
+        margin-top:12px;
+        border:1px solid rgba(255,255,255,0.1);
+      "
+    />
+  `;
+
+              typewriterMsg(
+                graphMessage,
+                {
+                  mode: "html",
+                },
+                () => {
+                  chatHistory.push({
+                    role: "assistant",
+                    content: graphMessage,
+                  });
+
+                  isBusy = false;
+                  sendBtn.disabled = false;
+                  setStopVisible(false);
+                  setStatus("ready");
+                  chatInput.focus();
+                },
+              );
+            }
+
+            // TEXT RESPONSE
+            // VIDEO RESPONSE
+         // VIDEO RESPONSE
+else if (data.type === "video") {
+
+    const answer =
+        data.answer || "Video found.";
+
+    typewriterMsg(
+        answer,
+        {
+            mode: "video",
+            video: data.video,
+        },
+        () => {
+
+            chatHistory.push({
+                role: "assistant",
+                content: answer,
+            });
+
+            isBusy = false;
+            sendBtn.disabled = false;
+            setStopVisible(false);
+            setStatus("ready");
+            chatInput.focus();
+        },
+    );
+}
+
+            // TEXT RESPONSE
+            else {
+              const answer =
+                data.answer || data.message || "No response from server.";
+
+              typewriterMsg(
+                answer,
+                {
+                  mode: "text",
+                },
+                () => {
+                  chatHistory.push({
+                    role: "assistant",
+                    content: answer,
+                  });
+
+                  isBusy = false;
+                  sendBtn.disabled = false;
+                  setStopVisible(false);
+                  setStatus("ready");
+                  chatInput.focus();
+                },
+              );
+            }
           }
         } catch {
           removeTyping(typingId);
@@ -1708,9 +1788,15 @@
           if (stopRequested) return;
 
           if (i < text.length) {
-            target.innerHTML = formatResponse(
-              escHtml(text.substring(0, i + 1)),
-            );
+            if (mode === "html") {
+              target.innerHTML = text;
+
+              i = text.length;
+            } else {
+              target.innerHTML = formatResponse(
+                escHtml(text.substring(0, i + 1)),
+              );
+            }
 
             i++;
 
