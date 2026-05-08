@@ -84,6 +84,74 @@
         height: 100vh;
       }
 
+      .bill-panel-header{
+
+  height:56px;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:space-between;
+
+  padding:0 16px;
+
+  background:#111827;
+
+  border-bottom:1px solid rgba(255,255,255,0.08);
+
+}
+
+.bill-panel-title{
+
+  color:white;
+
+  font-size:15px;
+
+  font-weight:600;
+
+}
+
+.bill-panel-actions{
+
+  display:flex;
+
+  gap:10px;
+
+}
+
+.panel-btn{
+
+  width:34px;
+
+  height:34px;
+
+  border:none;
+
+  border-radius:10px;
+
+  cursor:pointer;
+
+  background:rgba(255,255,255,0.08);
+
+  color:white;
+
+  font-size:16px;
+
+}
+
+.panel-btn:hover{
+
+  background:rgba(255,255,255,0.15);
+
+}
+
+.close-btn{
+
+  background:#ef4444;
+
+}
+
       /* ── SIDEBAR ── */
       .sidebar {
         width: 268px;
@@ -326,14 +394,19 @@
       }
 
       /* ── MAIN ── */
-      .main {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        background: var(--bg);
-        transition: background 0.25s;
-      }
+  .main {
+
+  flex:1;
+
+  min-width:0;
+
+  display:flex;
+
+  flex-direction:column;
+
+  overflow:hidden;
+
+}
 
       /* ── TOPBAR ── */
       .topbar {
@@ -1033,6 +1106,50 @@
         background: #6d5df3;
       }
 
+      /* =========================
+   BILL SPLIT PANEL
+========================= */
+
+      .bill-panel {
+        width: 0;
+
+        background: #111;
+
+        border-left: 1px solid rgba(255, 255, 255, 0.08);
+
+        overflow: hidden;
+
+        transition: 0.35s ease;
+
+        position: relative;
+      }
+
+.bill-panel.active {
+
+  width: 38%;
+
+  min-width: 420px;
+
+  max-width: 540px;
+
+}
+
+.bill-panel iframe {
+
+  width: 114%;
+
+  height: calc(114% - 56px);
+
+  border: none;
+
+  background: white;
+
+  transform: scale(0.88);
+
+  transform-origin: top left;
+
+}
+
       * {
         scrollbar-width: thin;
         scrollbar-color: var(--bg-3) transparent;
@@ -1130,8 +1247,8 @@
           </div>
 
           <div class="topbar-right">
-            <a href="dashboard.html" class="icon-btn" title="Dashboard">
-              <svg
+            <!-- <a href="dashboard.html" class="icon-btn" title="Dashboard"> -->
+              <!-- <svg
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -1142,7 +1259,27 @@
                 <rect x="14" y="14" width="7" height="7" />
                 <rect x="3" y="14" width="7" height="7" />
               </svg>
-            </a>
+            </a> -->
+
+            <button
+  class="icon-btn"
+  onclick="openDashboard()"
+  title="Open Billing Dashboard"
+>
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <rect x="3" y="3" width="7" height="7"></rect>
+    <rect x="14" y="3" width="7" height="7"></rect>
+    <rect x="14" y="14" width="7" height="7"></rect>
+    <rect x="3" y="14" width="7" height="7"></rect>
+  </svg>
+</button>
             <button
               class="icon-btn clear-btn"
               onclick="clearChat()"
@@ -1327,7 +1464,46 @@
             Enter to send &nbsp;·&nbsp; Shift+Enter for new line
           </div>
         </div>
+
+        <!-- RIGHT BILL PANEL -->
+
+       
       </main>
+
+       <div id="billPanel" class="bill-panel">
+        <div class="bill-panel-header">
+
+  <div class="bill-panel-title">
+    Billing Dashboard
+  </div>
+
+  <div class="bill-panel-actions">
+
+    <button
+      class="panel-btn"
+      onclick="toggleBillExpand()"
+      id="expandBillBtn"
+    >
+      ⛶
+    </button>
+
+    <button
+      class="panel-btn close-btn"
+      onclick="closeDashboard()"
+      
+    >
+      ✕
+    </button>
+
+  </div>
+
+</div>
+      <iframe id="billFrame" src="" frameborder="0"></iframe>
+  </div>
+
+</div>
+
+
     </div>
 
     <script>
@@ -1338,6 +1514,26 @@
 
         document.body.style.overflow = "hidden";
       }
+
+      function closeDashboard() {
+
+  const panel = document.getElementById("billPanel");
+
+  panel.classList.remove("active");
+
+  panel.classList.remove("expanded");
+
+}
+
+
+
+function toggleBillExpand() {
+
+  const panel = document.getElementById("billPanel");
+
+  panel.classList.toggle("expanded");
+
+}
 
       function closeVideoModal() {
         document.getElementById("videoModal").style.display = "none";
@@ -1599,8 +1795,7 @@
                 // 🔥 delay before opening dashboard
                 setTimeout(() => {
                   localStorage.setItem("actionData", JSON.stringify(data));
-                  window.open("dashboard.html", "_blank");
-
+                openDashboard();
                   // reset UI
                   isBusy = false;
                   sendBtn.disabled = false;
@@ -1655,33 +1850,30 @@
 
             // TEXT RESPONSE
             // VIDEO RESPONSE
-         // VIDEO RESPONSE
-else if (data.type === "video") {
+            // VIDEO RESPONSE
+            else if (data.type === "video") {
+              const answer = data.answer || "Video found.";
 
-    const answer =
-        data.answer || "Video found.";
+              typewriterMsg(
+                answer,
+                {
+                  mode: "video",
+                  video: data.video,
+                },
+                () => {
+                  chatHistory.push({
+                    role: "assistant",
+                    content: answer,
+                  });
 
-    typewriterMsg(
-        answer,
-        {
-            mode: "video",
-            video: data.video,
-        },
-        () => {
-
-            chatHistory.push({
-                role: "assistant",
-                content: answer,
-            });
-
-            isBusy = false;
-            sendBtn.disabled = false;
-            setStopVisible(false);
-            setStatus("ready");
-            chatInput.focus();
-        },
-    );
-}
+                  isBusy = false;
+                  sendBtn.disabled = false;
+                  setStopVisible(false);
+                  setStatus("ready");
+                  chatInput.focus();
+                },
+              );
+            }
 
             // TEXT RESPONSE
             else {
@@ -1991,6 +2183,27 @@ else if (data.type === "video") {
       loadDocuments();
       loadChats();
       chatInput.focus();
+
+
+      function openDashboard() {
+
+  const panel =
+    document.getElementById(
+      "billPanel"
+    );
+
+  const frame =
+    document.getElementById(
+      "billFrame"
+    );
+
+  panel.classList.add(
+    "active"
+  );
+
+  frame.src =
+    "dashboard.html";
+}
     </script>
   </body>
 </html>

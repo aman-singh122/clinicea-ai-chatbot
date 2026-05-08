@@ -42,35 +42,49 @@ function detectIntent(question) {
 
     // ================= ANALYTICS =================
 
-    const analyticsKeywords = [
+   const analyticsKeywords = [
 
-        "analytics",
-        "revenue",
-        "income",
-        "appointments",
-        "appointment",
-        "cancelled",
-        "waiting",
-        "completed",
-        "check out",
-        "trend",
-        "distribution",
-        "compare",
-        "comparison",
-        "statistics",
-        "status",
-        "graph",
-        "chart",
-        "pie chart",
-        "bar chart",
-        "line chart",
-        "csv",
-        "dataset",
-        "report",
-        "analysis",
-        "top services",
-        "performance"
-    ];
+    "analytics",
+    "revenue",
+    "income",
+    "appointments",
+    "appointment",
+    "cancelled",
+    "waiting",
+    "completed",
+    "check out",
+    "trend",
+    "distribution",
+    "compare",
+    "comparison",
+    "statistics",
+    "status",
+    "graph",
+    "chart",
+    "pie chart",
+    "bar chart",
+    "line chart",
+    "line graph",
+    "pie graph",
+    "bar graph",
+    "csv",
+    "dataset",
+    "report",
+    "analysis",
+    "top services",
+    "performance",
+
+    // IMPORTANT NEW ONES
+    "records",
+    "count",
+    "total",
+    "how many",
+    "data",
+    "show data",
+    "stats",
+    "numbers",
+    "summary"
+];
 
 
     if (

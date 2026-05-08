@@ -291,7 +291,102 @@ app.post("/chat", async (req, res) => {
 
     const matchedVideo = findRelevantVideo(question, videos);
 
-    const foundPatient = userPatients.find((p) => lowerQ.includes(p.name));
+  // =========================
+// PRIORITY MATCHING
+// =========================
+
+let matchedPatients = [];
+
+
+// ===== PATIENT ID MATCH =====
+
+matchedPatients =
+  userPatients.filter((p) =>
+
+    lowerQ.includes(
+      p.patientId.toLowerCase()
+    )
+  );
+
+
+// ===== FILE NO MATCH =====
+
+if (
+
+  matchedPatients.length === 0
+
+) {
+
+  matchedPatients =
+    userPatients.filter((p) =>
+
+      lowerQ.includes(
+        String(p.fileNo)
+      )
+    );
+}
+
+
+// ===== FULL NAME MATCH =====
+
+if (
+
+  matchedPatients.length === 0
+
+) {
+
+  matchedPatients =
+    userPatients.filter((p) =>
+
+      lowerQ.includes(
+        p.fullName.toLowerCase()
+      )
+    );
+}
+
+
+// ===== SHORT NAME MATCH =====
+
+if (
+
+  matchedPatients.length === 0
+
+) {
+
+  matchedPatients =
+    userPatients.filter((p) =>
+
+      lowerQ.includes(
+        p.name.toLowerCase()
+      )
+    );
+}
+
+    // =========================
+    // MULTIPLE MATCHES
+    // =========================
+
+    if (matchedPatients.length > 1) {
+      const patientList = matchedPatients
+        .map((p, index) => `${index + 1}. ${p.fullName} (${p.patientId})`)
+        .join("\n");
+
+      return res.json({
+        type: "text",
+
+        answer: `Multiple patients found:
+
+${patientList}
+
+Please provide patientId or file number.`,
+      });
+    }
+
+    // =========================
+    // SINGLE MATCH
+    // =========================
+
+    const foundPatient = matchedPatients[0];
 
     if (lowerQ.includes("bill") && foundPatient) {
       const filePath = foundPatient.filePath;
@@ -306,7 +401,7 @@ app.post("/chat", async (req, res) => {
 
       const billUrl = generateBill(
         user,
-        foundPatient.name,
+        foundPatient.fullName,
         foundPatient.fileNo,
         extractedText,
       );
@@ -314,7 +409,9 @@ app.post("/chat", async (req, res) => {
       return res.json({
         type: "action",
         action: "new_bill",
-        patient: foundPatient.name,
+        patient: foundPatient.fullName,
+
+        patientId: foundPatient.patientId,
         fileNo: foundPatient.fileNo,
         billUrl: billUrl,
         summary:
@@ -462,26 +559,23 @@ ${question}
 
     console.log(JSON.stringify(response, null, 2));
 
-   res.json({
+    res.json({
+      type: matchedVideo ? "video" : "text",
 
-  type: matchedVideo ? "video" : "text",
+      answer:
+        response.candidates?.[0]?.content?.parts?.[0]?.text ||
+        response.text ||
+        "Answer not found",
 
-answer:
-    response.candidates?.[0]?.content?.parts?.[0]?.text ||
-
-    response.text ||
-
-    "Answer not found",
-
-  video: matchedVideo
-    ? {
-        title: matchedVideo.title,
-        url: matchedVideo.url,
-        thumbnail: matchedVideo.thumbnail,
-        description: matchedVideo.description,
-      }
-    : null,
-});
+      video: matchedVideo
+        ? {
+            title: matchedVideo.title,
+            url: matchedVideo.url,
+            thumbnail: matchedVideo.thumbnail,
+            description: matchedVideo.description,
+          }
+        : null,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ answer: "Api key not valid" });

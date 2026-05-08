@@ -1,142 +1,403 @@
-import { ChartJSNodeCanvas } from "chartjs-node-canvas";
+import { ChartJSNodeCanvas }
+from "chartjs-node-canvas";
 
 import fs from "fs";
 
 import path from "path";
 
-import { fileURLToPath } from "url";
 
-// __dirname setup
-const __filename = fileURLToPath(import.meta.url);
+// =========================
+// CHART SIZE
+// =========================
 
-const __dirname = path.dirname(__filename);
+const width = 1000;
 
-// Chart size
-const width = 800;
+const height = 700;
 
-const height = 600;
 
-// Chart instance
-const chartCanvas = new ChartJSNodeCanvas({
-  width,
-  height,
-});
+// =========================
+// CHART INSTANCE
+// =========================
 
-// COMMON STATUS COUNT FUNCTION
-function getStatusCounts(data) {
-  const statusCounts = {};
+const chartCanvas =
+    new ChartJSNodeCanvas({
 
-  data.forEach((row) => {
-    const status = row.Status || "Unknown";
+        width,
 
-    statusCounts[status] = (statusCounts[status] || 0) + 1;
-  });
+        height,
 
-  return statusCounts;
+        backgroundColour:
+            "#111827"
+    });
+
+
+// =========================
+// PREPARE GRAPH DATA
+// =========================
+
+function prepareGraphData(
+    data,
+    column
+) {
+
+    const counts = {};
+
+    data.forEach(row => {
+
+        const value =
+            row[column] || "Unknown";
+
+        counts[value] =
+            (counts[value] || 0) + 1;
+    });
+
+    return {
+
+        labels:
+            Object.keys(counts),
+
+        values:
+            Object.values(counts)
+    };
 }
 
+
+// =========================
+// SAVE GRAPH
+// =========================
+
+function saveGraph(
+    fileName,
+    image
+) {
+
+    const outputPath =
+        path.join(
+
+            process.cwd(),
+
+            `backend/graphs/${fileName}`
+        );
+
+    fs.writeFileSync(
+        outputPath,
+        image
+    );
+}
+
+
+// =========================
 // PIE CHART
-async function generatePieChart(data) {
-  const statusCounts = getStatusCounts(data);
+// =========================
 
-  const configuration = {
-    type: "pie",
+async function generatePieChart(
+    data,
+    column = "Status"
+) {
 
-    data: {
-      labels: Object.keys(statusCounts),
+    const graphData =
+        prepareGraphData(
+            data,
+            column
+        );
 
-      datasets: [
-        {
-          label: "Appointments",
+    const configuration = {
 
-          data: Object.values(statusCounts),
+        type: "pie",
 
-          backgroundColor: [
-            "#36A2EB",
-            "#FF6384",
-            "#FFCE56",
-            "#4BC0C0",
-            "#9966FF",
-            "#FF9F40",
-          ],
+        data: {
+
+            labels:
+                graphData.labels,
+
+            datasets: [
+                {
+
+                    label:
+                        `${column} Distribution`,
+
+                    data:
+                        graphData.values,
+
+                    backgroundColor: [
+
+                        "#36A2EB",
+
+                        "#FF6384",
+
+                        "#FFCE56",
+
+                        "#4BC0C0",
+
+                        "#9966FF",
+
+                        "#FF9F40",
+
+                        "#8BC34A",
+
+                        "#E91E63"
+                    ]
+                }
+            ]
         },
-      ],
-    },
-  };
 
-  const image = await chartCanvas.renderToBuffer(configuration);
+        options: {
 
-  const outputPath = path.join(process.cwd(), "backend/graphs/pieChart.png");
+            plugins: {
 
-  fs.writeFileSync(outputPath, image);
+                legend: {
 
-  return "/graphs/pieChart.png";
+                    labels: {
+
+                        color: "white"
+                    }
+                },
+
+                title: {
+
+                    display: true,
+
+                    text:
+                        `${column} Distribution`,
+
+                    color: "white",
+
+                    font: {
+
+                        size: 22
+                    }
+                }
+            }
+        }
+    };
+
+    const image =
+        await chartCanvas
+            .renderToBuffer(configuration);
+
+    saveGraph(
+        "pieChart.png",
+        image
+    );
+
+    return "/graphs/pieChart.png";
 }
 
+
+// =========================
 // BAR CHART
-async function generateBarChart(data) {
-  const statusCounts = getStatusCounts(data);
+// =========================
 
-  const configuration = {
-    type: "bar",
+async function generateBarChart(
+    data,
+    column = "Status"
+) {
 
-    data: {
-      labels: Object.keys(statusCounts),
+    const graphData =
+        prepareGraphData(
+            data,
+            column
+        );
 
-      datasets: [
-        {
-          label: "Appointments",
+    const configuration = {
 
-          data: Object.values(statusCounts),
+        type: "bar",
 
-          backgroundColor: "#36A2EB",
+        data: {
+
+            labels:
+                graphData.labels,
+
+            datasets: [
+                {
+
+                    label:
+                        `${column} Comparison`,
+
+                    data:
+                        graphData.values,
+
+                    backgroundColor:
+                        "#36A2EB"
+                }
+            ]
         },
-      ],
-    },
-  };
 
-  const image = await chartCanvas.renderToBuffer(configuration);
+        options: {
 
-  const outputPath = path.join(process.cwd(), "backend/graphs/barChart.png");
+            scales: {
 
-  fs.writeFileSync(outputPath, image);
+                x: {
 
-  return "/graphs/barChart.png";
+                    ticks: {
+
+                        color: "white"
+                    }
+                },
+
+                y: {
+
+                    ticks: {
+
+                        color: "white"
+                    }
+                }
+            },
+
+            plugins: {
+
+                legend: {
+
+                    labels: {
+
+                        color: "white"
+                    }
+                },
+
+                title: {
+
+                    display: true,
+
+                    text:
+                        `${column} Analysis`,
+
+                    color: "white",
+
+                    font: {
+
+                        size: 22
+                    }
+                }
+            }
+        }
+    };
+
+    const image =
+        await chartCanvas
+            .renderToBuffer(configuration);
+
+    saveGraph(
+        "barChart.png",
+        image
+    );
+
+    return "/graphs/barChart.png";
 }
 
+
+// =========================
 // LINE CHART
-async function generateLineChart(data) {
-  const statusCounts = getStatusCounts(data);
+// =========================
 
-  const configuration = {
-    type: "line",
+async function generateLineChart(
+    data,
+    column = "Status"
+) {
 
-    data: {
-      labels: Object.keys(statusCounts),
+    const graphData =
+        prepareGraphData(
+            data,
+            column
+        );
 
-      datasets: [
-        {
-          label: "Appointments",
+    const configuration = {
 
-          data: Object.values(statusCounts),
+        type: "line",
 
-          borderColor: "#36A2EB",
+        data: {
 
-          backgroundColor: "#36A2EB",
+            labels:
+                graphData.labels,
 
-          fill: false,
+            datasets: [
+                {
+
+                    label:
+                        `${column} Trend`,
+
+                    data:
+                        graphData.values,
+
+                    borderColor:
+                        "#36A2EB",
+
+                    backgroundColor:
+                        "#36A2EB",
+
+                    fill: false,
+
+                    tension: 0.3
+                }
+            ]
         },
-      ],
-    },
-  };
 
-  const image = await chartCanvas.renderToBuffer(configuration);
+        options: {
 
-  const outputPath = path.join(process.cwd(), "backend/graphs/lineChart.png");
+            scales: {
 
-  fs.writeFileSync(outputPath, image);
+                x: {
 
-  return "/graphs/lineChart.png";
+                    ticks: {
+
+                        color: "white"
+                    }
+                },
+
+                y: {
+
+                    ticks: {
+
+                        color: "white"
+                    }
+                }
+            },
+
+            plugins: {
+
+                legend: {
+
+                    labels: {
+
+                        color: "white"
+                    }
+                },
+
+                title: {
+
+                    display: true,
+
+                    text:
+                        `${column} Trend Analysis`,
+
+                    color: "white",
+
+                    font: {
+
+                        size: 22
+                    }
+                }
+            }
+        }
+    };
+
+    const image =
+        await chartCanvas
+            .renderToBuffer(configuration);
+
+    saveGraph(
+        "lineChart.png",
+        image
+    );
+
+    return "/graphs/lineChart.png";
 }
 
-export { generatePieChart, generateBarChart, generateLineChart };
+
+export {
+
+    generatePieChart,
+
+    generateBarChart,
+
+    generateLineChart
+};

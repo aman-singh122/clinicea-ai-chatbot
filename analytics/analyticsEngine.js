@@ -1,66 +1,321 @@
-function getTotalAppointments(data) {
+function getTotalRows(data) {
 
-    return data.length;
+  return data.length;
 }
 
 
-function getCancelledAppointments(data) {
+// =========================
+// FIND COLUMN DYNAMICALLY
+// =========================
 
-    return data.filter(row =>
+function findColumn(
+  data,
+  keywords
+) {
 
-        row.Status === "Cancelled"
+  if (!data.length)
+    return null;
 
-    ).length;
+  const headers =
+    Object.keys(data[0]);
+
+  for (const header of headers) {
+
+    const lower =
+      header.toLowerCase();
+
+    for (const keyword of keywords) {
+
+      if (
+        lower.includes(
+          keyword.toLowerCase()
+        )
+      ) {
+
+        return header;
+      }
+    }
+  }
+
+  return null;
 }
 
 
-function getCompletedAppointments(data) {
+// =========================
+// FILTER ROWS
+// =========================
 
-    return data.filter(row =>
+function filterRows(
+  data,
+  column,
+  value
+) {
 
-        row.Status === "Check Out"
+  return data.filter(row => {
 
-    ).length;
+    const cell =
+      String(
+        row[column] || ""
+      ).toLowerCase();
+
+    return cell.includes(
+      value.toLowerCase()
+    );
+  });
 }
 
 
-function getWaitingAppointments(data) {
+// =========================
+// COUNT VALUES
+// =========================
 
-    return data.filter(row =>
+function countByColumn(
+  data,
+  column
+) {
 
-        row.Status === "Waiting"
+  const counts = {};
 
-    ).length;
+  data.forEach(row => {
+
+    const key =
+      row[column] || "Unknown";
+
+    counts[key] =
+      (counts[key] || 0) + 1;
+  });
+
+  return counts;
 }
 
 
-function getTotalRevenue(data) {
+// =========================
+// SUM COLUMN
+// =========================
 
-    return data.reduce((sum, row) => {
+function sumColumn(
+  data,
+  column
+) {
 
-        return sum + Number(row["Service Price (After tax)"] || 0);
+  return data.reduce((sum, row) => {
 
-    }, 0);
+    const value =
+      parseFloat(
+        row[column]
+      ) || 0;
+
+    return sum + value;
+
+  }, 0);
 }
 
-// DATE FILTER
-function getAppointmentsByDate(data, date) {
 
-    return data.filter(row => {
+// =========================
+// SMART COLUMN DETECTION
+// FUTURE READY
+// =========================
 
-        const createdDate =
-            row["Created On Date"];
+function detectBestColumn(
+  data,
+  query
+) {
 
-        return createdDate === date;
-    });
+  if (!data.length)
+    return null;
+
+
+  const headers =
+    Object.keys(data[0]);
+
+
+  query =
+    query
+      .toLowerCase()
+      .replace(/[^a-z0-9 ]/g, " ");
+
+
+  const queryWords =
+    query
+      .split(" ")
+      .filter(word =>
+        word.length > 3
+      );
+
+
+  // =========================
+  // EXACT HEADER MATCH
+  // =========================
+
+  for (const header of headers) {
+
+    const cleanHeader =
+      header
+        .toLowerCase()
+        .replace(/[^a-z0-9 ]/g, " ");
+
+    if (
+      query.includes(cleanHeader)
+    ) {
+
+      return header;
+    }
+  }
+
+
+  // =========================
+  // QUERY WORD MATCH
+  // =========================
+
+ 
+
+  // =========================
+  // SMART FALLBACKS
+  // =========================
+
+  const smartMappings = {
+
+  doctor: [
+
+    "apptwithfullname",
+
+    "resource",
+
+    "created by"
+  ],
+
+  service: [
+
+    "service name",
+
+    "service category"
+  ],
+
+  revenue: [
+
+    "service price",
+
+    "after tax",
+
+    "before tax"
+  ],
+
+  status: [
+
+    "status",
+
+    "cancel reason"
+  ],
+
+  patient: [
+
+    "mobile",
+
+    "email",
+
+    "file no"
+  ],
+
+  date: [
+
+    "created on date",
+
+    "next appointment date",
+
+    "apptstartdtm"
+  ]
+};
+
+for (const keyword in smartMappings) {
+
+  if (
+
+    query.includes(keyword)
+
+  ) {
+
+    const possibleColumns =
+      smartMappings[keyword];
+
+    for (const header of headers) {
+
+      const cleanHeader =
+        header.toLowerCase();
+
+      for (const possible of possibleColumns) {
+
+        if (
+
+          cleanHeader.includes(possible)
+
+        ) {
+
+          return header;
+        }
+      }
+    }
+  }
+}
+
+  
+
+
+  // =========================
+  // FINAL FALLBACK
+  // =========================
+
+  return headers[0];
+}
+
+
+// =========================
+// GET DATE ROWS
+// =========================
+
+function getRowsByDate(
+  data,
+  dateColumn,
+  date
+) {
+
+  return data.filter(row => {
+
+    const rawDate =
+      String(
+        row[dateColumn] || ""
+      );
+
+    const cleanedRowDate =
+      rawDate
+        .replaceAll("/", "-")
+        .split(" ")[0]
+        .trim();
+
+    const cleanedQueryDate =
+      date
+        .replaceAll("/", "-")
+        .trim();
+
+    return cleanedRowDate.includes(
+      cleanedQueryDate
+    );
+  });
 }
 
 
 export {
-   getTotalAppointments,
-   getCancelledAppointments,
-   getCompletedAppointments,
-   getWaitingAppointments,
-   getTotalRevenue,
-   getAppointmentsByDate
+
+  getTotalRows,
+
+  findColumn,
+
+  detectBestColumn,
+
+  filterRows,
+
+  countByColumn,
+
+  sumColumn,
+
+  getRowsByDate
 };
