@@ -9,6 +9,12 @@ from "./csvToSqlite.js";
 import sqlQueryGenerator
 from "./sqlQueryGenerator.js";
 
+import graphDecisionEngine
+from "./graphDecisionEngine.js";
+
+import graphGenerator
+from "./graphGenerator.js";
+
 
 import executeSql
 from "./executeSql.js";
@@ -132,6 +138,33 @@ console.log(
   result
 );
 
+const graphConfig =
+
+  graphDecisionEngine(
+    query,
+    result
+  );
+
+let graphData = null;
+
+if (graphConfig.graph) {
+
+  graphData =
+
+    graphGenerator(
+      result
+    );
+}
+
+console.log(
+  "\nGRAPH CONFIG:\n",
+  graphConfig
+);
+
+console.log(
+  "\nGRAPH DATA:\n",
+  graphData
+);
     // NATURAL ANSWER
 
     const answer =
@@ -159,11 +192,17 @@ res.json({
     })
   ),
 
-  sql,
+  success: true,
 
-  result,
+sql,
 
-  answer
+result,
+
+answer,
+
+graphConfig,
+
+graphData
 });
 
   } catch (error) {

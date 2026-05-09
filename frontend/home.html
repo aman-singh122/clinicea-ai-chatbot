@@ -135,6 +135,10 @@
 
   height: 350px;
 
+  min-height: 350px;
+
+  position: relative;
+
   margin-bottom: 24px;
 
   background: rgba(255,255,255,0.03);
@@ -990,7 +994,7 @@ min-width: 720px;
   box-shadow:
     0 10px 40px rgba(0,0,0,0.35);
 
-  overflow: hidden;
+  overflow: visible;
 
 }
 .msg-row.bot {
@@ -2797,6 +2801,265 @@ csvBtn.onclick = () => {
     );
   }
 };
+
+
+
+function renderAnalytics(data) {
+  const chartId =
+  "chart_" + Date.now();
+
+  const msgGroup =
+
+    document.querySelector(
+      ".msg-group"
+    ) || messagesEl;
+
+  const row =
+    document.createElement("div");
+
+  row.className =
+    "msg-row bot";
+
+  // =========================
+  // TABLE HTML
+  // =========================
+
+  let tableHTML = "";
+
+  if (
+
+    data.tableData &&
+    data.tableData.length
+
+  ) {
+
+    const headers =
+      Object.keys(
+        data.tableData[0]
+      );
+
+    tableHTML += `
+      <table class="analytics-table">
+
+        <thead>
+          <tr>
+
+            ${headers.map(h => `
+              <th>${h}</th>
+            `).join("")}
+
+          </tr>
+        </thead>
+
+        <tbody>
+
+          ${data.tableData.map(row => `
+            <tr>
+
+              ${headers.map(h => `
+                <td>${row[h]}</td>
+              `).join("")}
+
+            </tr>
+          `).join("")}
+
+        </tbody>
+
+      </table>
+    `;
+  }
+
+  // =========================
+  // MAIN UI
+  // =========================
+
+  row.innerHTML = `
+
+    <div class="msg-avatar bot-avatar">
+
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="white"
+        stroke-width="2"
+        stroke-linecap="round"
+      >
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+
+    </div>
+
+    <div class="msg-bubble">
+
+      <div class="analytics-ui">
+
+        <div class="analytics-header">
+
+          <div class="analytics-title">
+            Analytics Result
+          </div>
+
+          <div class="analytics-sub">
+
+            AI Generated CSV Insights
+
+          </div>
+
+        </div>
+
+        <div class="analytics-explanation">
+
+          ${data.answer}
+
+        </div>
+
+       ${
+  data.graphConfig?.graph
+
+  ? `
+
+    <div class="chart-container">
+
+      <canvas id="${chartId}"></canvas>
+
+    </div>
+
+  `
+
+  : ""
+}
+
+        ${tableHTML}
+
+      </div>
+
+    </div>
+  `;
+
+  msgGroup.appendChild(row);
+
+  // =========================
+  // GRAPH RENDER
+  // =========================
+
+  if (
+
+    data.graphConfig?.graph &&
+
+    data.graphData
+
+  ) {
+
+ const canvas =
+  document.getElementById(chartId);
+
+if (!canvas) {
+
+  console.log("Canvas not found");
+
+  return;
+}
+
+console.log(canvas);
+
+const ctx =
+  canvas.getContext("2d");
+
+console.log("CTX:", ctx);
+
+console.log(
+  "GRAPH DATA:",
+  data.graphData
+);
+
+console.log("CTX:", ctx);
+
+console.log(
+  "GRAPH TYPE:",
+  data.graphConfig.graphType
+);
+
+console.log(
+  "GRAPH DATA:",
+  data.graphData
+);
+
+    new Chart(ctx, {
+
+      type: "bar",
+      data: {
+
+        labels:
+          data.graphData.labels,
+
+        datasets: [{
+
+          label: "Analytics",
+
+          data:
+            data.graphData.values,
+
+          borderWidth: 2,
+
+          borderRadius: 8,
+        }]
+      },
+
+      options: {
+
+        responsive: true,
+animation: false,
+        maintainAspectRatio: false,
+
+        plugins: {
+
+          legend: {
+
+            labels: {
+
+              color: "white"
+            }
+          }
+        },
+
+        scales: {
+
+          y: {
+
+            ticks: {
+
+              color: "white"
+            },
+
+            grid: {
+
+              color:
+                "rgba(255,255,255,0.06)"
+            }
+          },
+
+          x: {
+
+            ticks: {
+
+              color: "white"
+            },
+
+            grid: {
+
+              color:
+                "rgba(255,255,255,0.04)"
+            }
+          }
+        }
+      }
+    });
+  }
+
+  scrollBottom();
+
+  saveChats();
+}
     </script>
    
   </body>
