@@ -4,6 +4,8 @@ function detectIntent(question) {
         question.toLowerCase();
 
 
+
+        
     // ================= FLAGS =================
 
     const intent = {
@@ -44,46 +46,42 @@ function detectIntent(question) {
 
    const analyticsKeywords = [
 
-    "analytics",
-    "revenue",
-    "income",
-    "appointments",
-    "appointment",
-    "cancelled",
-    "waiting",
-    "completed",
-    "check out",
-    "trend",
-    "distribution",
-    "compare",
-    "comparison",
-    "statistics",
-    "status",
-    "graph",
-    "chart",
-    "pie chart",
-    "bar chart",
-    "line chart",
-    "line graph",
-    "pie graph",
-    "bar graph",
-    "csv",
-    "dataset",
-    "report",
-    "analysis",
-    "top services",
-    "performance",
+  "analytics",
+  "graph",
+  "chart",
+  "stats",
+  "statistics",
 
-    // IMPORTANT NEW ONES
-    "records",
-    "count",
-    "total",
-    "how many",
-    "data",
-    "show data",
-    "stats",
-    "numbers",
-    "summary"
+  "revenue",
+  "income",
+  "billing",
+  "bill",
+  "bills",
+  "financial",
+
+  "appointments",
+  "appointment",
+
+  "patients",
+  "patient",
+
+  "doctors",
+  "doctor",
+
+  "top",
+  "highest",
+  "lowest",
+
+  "compare",
+  "comparison",
+
+  "trend",
+  "distribution",
+
+  "count",
+  "total",
+
+  "status"
 ];
 
 

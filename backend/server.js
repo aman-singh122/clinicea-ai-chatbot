@@ -8,8 +8,14 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { createRequire } from "module";
 import analyticsRoutes from "./routes/analyticsRoutes.js";
+import csvRoutes
+from "../csvAI/csvRoutes.js";
 
 import detectIntent from "./utils/detectIntent.js";
+
+import sqlRoutes
+from "../csvSQLAI/sqlRoutes.js";
+
 // ================= DIR SETUP =================
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -36,6 +42,8 @@ app.use("/uploads", express.static(uploadsPath));
 // ================= APP =================
 app.use(cors({ origin: "*" }));
 app.use(express.json());
+app.use("/api", csvRoutes);
+app.use("/api", sqlRoutes);
 app.use("/api", analyticsRoutes);
 
 //video function

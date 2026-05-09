@@ -3,113 +3,402 @@ import fs from "fs";
 import path from "path";
 
 
-function findRelevantFiles(user, query) {
+// ======================================
+// QUERY KEYWORDS
+// ======================================
 
-    const userFolder =
-        path.join("data", user);
+const queryCategories = {
 
-    const files =
-        fs.readdirSync(userFolder);
+  // =========================
+  // APPOINTMENTS
+  // =========================
 
-    query =
-        query.toLowerCase();
+  appointments: [
 
-    const matchedFiles = [];
+    "appointment",
+    "appointments",
+    "doctor",
+    "doctors",
+    "schedule",
+    "scheduled",
+    "consultation",
+    "consultations",
+    "visit",
+    "visits",
+    "checkup",
+    "patient flow",
+    "booking",
+    "bookings",
+    "waiting",
+    "queue",
+    "engaged",
+    "status",
+    "cancelled",
+    "active"
+  ],
 
+  // =========================
+  // BILLING / REVENUE
+  // =========================
 
-    // APPOINTMENTS
-    if (
+  billing: [
 
-        query.includes("appointment") ||
+    "revenue",
+    "revenues",
+    "income",
+    "earning",
+    "earnings",
+    "bill",
+    "bills",
+    "billing",
+    "payment",
+    "payments",
+    "invoice",
+    "invoices",
+    "money",
+    "financial",
+    "finance",
+    "collection",
+    "collections",
+    "tax",
+    "profit",
+    "amount",
+    "price"
+  ],
 
-        query.includes("doctor") ||
+  // =========================
+  // SERVICES / ITEMS
+  // =========================
 
-        query.includes("schedule")
+  services: [
 
-    ) {
+    "service",
+    "services",
+    "item",
+    "items",
+    "treatment",
+    "treatments",
+    "procedure",
+    "procedures",
+    "package",
+    "packages",
+    "category",
+    "medical service"
+  ],
 
-        const appointmentFile =
+  // =========================
+  // PATIENTS
+  // =========================
 
-            files.find(file =>
+  patients: [
 
-                file.toLowerCase()
-                    .includes("appointment")
-            );
-
-        if (appointmentFile) {
-
-            matchedFiles.push(
-                appointmentFile
-            );
-        }
-    }
-
-
-    // REVENUE / BILLS
-    if (
-
-        query.includes("revenue") ||
-
-        query.includes("income") ||
-
-        query.includes("bill")
-
-    ) {
-
-        const billFile =
-
-            files.find(file =>
-
-                file.toLowerCase()
-                    .includes("bills report")
-            );
-
-        if (billFile) {
-
-            matchedFiles.push(
-                billFile
-            );
-        }
-    }
-
-
-    // BILL ITEMS
-    if (
-
-        query.includes("service") ||
-
-        query.includes("item") ||
-
-        query.includes("treatment")
-
-    ) {
-
-        const itemFile =
-
-            files.find(file =>
-
-                file.toLowerCase()
-                    .includes("bill items")
-            );
-
-        if (itemFile) {
-
-            matchedFiles.push(
-                itemFile
-            );
-        }
-    }
-
-
-    // IF NOTHING MATCHES
-    if (matchedFiles.length === 0) {
-
-        return files;
-    }
+    "patient",
+    "patients",
+    "city",
+    "cities",
+    "mobile",
+    "email",
+    "address",
+    "location",
+    "patient source"
+  ]
+};
 
 
-    return matchedFiles;
+// ======================================
+// FILE PRIORITIES
+// ======================================
+
+const fileMatchers = {
+
+  appointments: [
+
+    "appointment"
+  ],
+
+  billing: [
+
+    "bills report",
+    "bill report"
+  ],
+
+  services: [
+
+    "bill items",
+    "items report"
+  ]
+};
+
+
+// ======================================
+// HELPER
+// ======================================
+
+function containsKeyword(
+
+  query,
+
+  keywords
+
+) {
+
+  return keywords.some(keyword =>
+
+    query.includes(
+      keyword
+    )
+  );
 }
 
+
+// ======================================
+// MAIN FUNCTION
+// ======================================
+
+function findRelevantFiles(
+
+  user,
+
+  query
+
+) {
+
+  const userFolder =
+
+    path.join(
+
+      process.cwd(),
+
+      "data",
+
+      user
+    );
+
+  // =========================
+  // CHECK USER FOLDER
+  // =========================
+
+  if (
+
+    !fs.existsSync(userFolder)
+
+  ) {
+
+    console.log(
+      "User folder not found"
+    );
+
+    return [];
+  }
+
+  // =========================
+  // GET FILES
+  // =========================
+
+  const files =
+
+    fs.readdirSync(userFolder);
+
+  const normalizedQuery =
+
+    query.toLowerCase();
+
+  const matchedFiles =
+
+    new Set();
+
+  // ======================================
+  // APPOINTMENTS
+  // ======================================
+
+  if (
+
+    containsKeyword(
+
+      normalizedQuery,
+
+      queryCategories.appointments
+    )
+
+  ) {
+
+    for (
+
+      const file of files
+
+    ) {
+
+      const lowerFile =
+
+        file.toLowerCase();
+
+      if (
+
+        fileMatchers.appointments.some(
+          keyword =>
+
+            lowerFile.includes(
+              keyword
+            )
+        )
+
+      ) {
+
+        matchedFiles.add(file);
+      }
+    }
+  }
+
+  // ======================================
+  // BILLING
+  // ======================================
+
+  if (
+
+    containsKeyword(
+
+      normalizedQuery,
+
+      queryCategories.billing
+    )
+
+  ) {
+
+    for (
+
+      const file of files
+
+    ) {
+
+      const lowerFile =
+
+        file.toLowerCase();
+
+      if (
+
+        fileMatchers.billing.some(
+          keyword =>
+
+            lowerFile.includes(
+              keyword
+            )
+        )
+
+      ) {
+
+        matchedFiles.add(file);
+      }
+    }
+  }
+
+  // ======================================
+  // SERVICES
+  // ======================================
+
+  if (
+
+    containsKeyword(
+
+      normalizedQuery,
+
+      queryCategories.services
+    )
+
+  ) {
+
+    for (
+
+      const file of files
+
+    ) {
+
+      const lowerFile =
+
+        file.toLowerCase();
+
+      if (
+
+        fileMatchers.services.some(
+          keyword =>
+
+            lowerFile.includes(
+              keyword
+            )
+        )
+
+      ) {
+
+        matchedFiles.add(file);
+      }
+    }
+  }
+
+  // ======================================
+  // PATIENTS
+  // ======================================
+
+  if (
+
+    containsKeyword(
+
+      normalizedQuery,
+
+      queryCategories.patients
+    )
+
+  ) {
+
+    for (
+
+      const file of files
+
+    ) {
+
+      const lowerFile =
+
+        file.toLowerCase();
+
+      // PATIENT ANALYTICS
+      // often use appointment data
+
+      if (
+
+        lowerFile.includes(
+          "appointment"
+        )
+
+      ) {
+
+        matchedFiles.add(file);
+      }
+    }
+  }
+
+  // ======================================
+  // FALLBACK
+  // ======================================
+
+  if (
+
+    matchedFiles.size === 0
+
+  ) {
+
+    console.log(
+      "No direct match found. Using all files."
+    );
+
+    return files;
+  }
+
+  // ======================================
+  // FINAL
+  // ======================================
+
+  return [
+
+    ...matchedFiles
+  ];
+}
 
 export default findRelevantFiles;

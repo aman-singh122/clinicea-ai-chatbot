@@ -3,14 +3,14 @@ import express from "express";
 import analyticsController
 from "../controllers/analyticsController.js";
 
-
-const router = express.Router();
-
+const router =
+  express.Router();
 
 router.post(
-    "/analytics",
-    analyticsController
-);
 
+  "/analytics",
+
+  analyticsController
+);
 
 export default router;
