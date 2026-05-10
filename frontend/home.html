@@ -2476,6 +2476,73 @@ function formatResponse(text) {
         }
       }
 
+      function restoreCharts() {
+
+  const analyticsCards =
+    document.querySelectorAll(
+      ".analytics-ui"
+    );
+
+  analyticsCards.forEach(card => {
+
+    const graphData =
+      card.dataset.graph;
+
+    const graphType =
+      card.dataset.type;
+
+    if (
+      !graphData ||
+      !graphType
+    ) return;
+
+    const canvas =
+      card.querySelector(
+        ".analytics-chart"
+      );
+
+    if (!canvas) return;
+
+    const parsed =
+      JSON.parse(graphData);
+
+    const ctx =
+      canvas.getContext("2d");
+
+    new Chart(ctx, {
+
+      type: graphType,
+
+      data: {
+
+        labels:
+          parsed.labels,
+
+        datasets: [{
+
+          label: "Analytics",
+
+          data:
+            parsed.values,
+
+          borderWidth: 2,
+
+          borderRadius: 8,
+        }]
+      },
+
+      options: {
+
+        responsive: true,
+
+        animation: false,
+
+        maintainAspectRatio: false,
+      }
+    });
+  });
+}
+
       function loadChats() {
         const savedChat = localStorage.getItem(`chat_${userSelect.value}`);
 
@@ -2483,6 +2550,8 @@ function formatResponse(text) {
           const msgGroup = document.querySelector(".msg-group");
 
           msgGroup.innerHTML = savedChat;
+
+          restoreCharts();
         }
       }
 
@@ -2805,8 +2874,9 @@ csvBtn.onclick = () => {
 
 
 function renderAnalytics(data) {
+
   const chartId =
-  "chart_" + Date.now();
+    "chart_" + Date.now();
 
   const msgGroup =
 
@@ -2839,33 +2909,43 @@ function renderAnalytics(data) {
       );
 
     tableHTML += `
+
       <table class="analytics-table">
 
         <thead>
+
           <tr>
 
             ${headers.map(h => `
+
               <th>${h}</th>
+
             `).join("")}
 
           </tr>
+
         </thead>
 
         <tbody>
 
           ${data.tableData.map(row => `
+
             <tr>
 
               ${headers.map(h => `
+
                 <td>${row[h]}</td>
+
               `).join("")}
 
             </tr>
+
           `).join("")}
 
         </tbody>
 
       </table>
+
     `;
   }
 
@@ -2891,7 +2971,11 @@ function renderAnalytics(data) {
 
     <div class="msg-bubble">
 
-      <div class="analytics-ui">
+      <div
+        class="analytics-ui"
+        data-graph='${JSON.stringify(data.graphData || {})}'
+        data-type='${data.graphConfig?.graphType || ""}'
+      >
 
         <div class="analytics-header">
 
@@ -2913,21 +2997,28 @@ function renderAnalytics(data) {
 
         </div>
 
-       ${
-  data.graphConfig?.graph
+        ${
 
-  ? `
+          data.graphConfig?.graph &&
+          data.graphData &&
+          data.graphData.labels?.length > 1
 
-    <div class="chart-container">
+          ? `
 
-      <canvas id="${chartId}"></canvas>
+            <div class="chart-container">
 
-    </div>
+              <canvas
+                id="${chartId}"
+                class="analytics-chart"
+              ></canvas>
 
-  `
+            </div>
 
-  : ""
-}
+          `
+
+          : ""
+
+        }
 
         ${tableHTML}
 
@@ -2945,115 +3036,145 @@ function renderAnalytics(data) {
   if (
 
     data.graphConfig?.graph &&
-
-    data.graphData
+    data.graphData &&
+    data.graphData.labels?.length > 1
 
   ) {
 
- const canvas =
-  document.getElementById(chartId);
+    setTimeout(() => {
 
-if (!canvas) {
+      const canvas =
+        document.getElementById(
+          chartId
+        );
 
-  console.log("Canvas not found");
+      if (!canvas) {
 
-  return;
-}
+        console.log(
+          "Canvas not found"
+        );
 
-console.log(canvas);
+        return;
+      }
 
-const ctx =
-  canvas.getContext("2d");
+      const ctx =
+        canvas.getContext("2d");
 
-console.log("CTX:", ctx);
+      if (!ctx) {
 
-console.log(
-  "GRAPH DATA:",
-  data.graphData
-);
+        console.log(
+          "CTX not found"
+        );
 
-console.log("CTX:", ctx);
+        return;
+      }
 
-console.log(
-  "GRAPH TYPE:",
-  data.graphConfig.graphType
-);
+      console.log(
+        "GRAPH TYPE:",
+        data.graphConfig.graphType
+      );
 
-console.log(
-  "GRAPH DATA:",
-  data.graphData
-);
+      console.log(
+        "GRAPH DATA:",
+        data.graphData
+      );
 
-    new Chart(ctx, {
+      const isPieChart =
 
-      type: "bar",
-      data: {
+        data.graphConfig.graphType === "pie" ||
 
-        labels:
-          data.graphData.labels,
+        data.graphConfig.graphType === "doughnut";
 
-        datasets: [{
+      new Chart(ctx, {
 
-          label: "Analytics",
+        type:
+          data.graphConfig.graphType,
 
-          data:
-            data.graphData.values,
+        data: {
 
-          borderWidth: 2,
+          labels:
+            data.graphData.labels,
 
-          borderRadius: 8,
-        }]
-      },
+          datasets: [{
 
-      options: {
+            label: "Analytics",
 
-        responsive: true,
-animation: false,
-        maintainAspectRatio: false,
+            data:
+              data.graphData.values,
 
-        plugins: {
+            borderWidth: 2,
 
-          legend: {
+            borderRadius:
+              isPieChart ? 0 : 8,
 
-            labels: {
+            tension: 0.4,
 
-              color: "white"
-            }
-          }
+            fill: false,
+          }]
         },
 
-        scales: {
+        options: {
 
-          y: {
+          responsive: true,
 
-            ticks: {
+          animation: false,
 
-              color: "white"
-            },
+          maintainAspectRatio: false,
 
-            grid: {
+          plugins: {
 
-              color:
-                "rgba(255,255,255,0.06)"
+            legend: {
+
+              labels: {
+
+                color: "white"
+              }
             }
           },
 
-          x: {
+          // =========================
+          // REMOVE AXES FOR PIE
+          // =========================
 
-            ticks: {
+          ...( !isPieChart && {
 
-              color: "white"
-            },
+            scales: {
 
-            grid: {
+              y: {
 
-              color:
-                "rgba(255,255,255,0.04)"
+                ticks: {
+
+                  color: "white"
+                },
+
+                grid: {
+
+                  color:
+                    "rgba(255,255,255,0.06)"
+                }
+              },
+
+              x: {
+
+                ticks: {
+
+                  color: "white"
+                },
+
+                grid: {
+
+                  color:
+                    "rgba(255,255,255,0.04)"
+                }
+              }
             }
-          }
+
+          })
+
         }
-      }
-    });
+      });
+
+    }, 0);
   }
 
   scrollBottom();
