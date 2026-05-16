@@ -12,3 +12,7 @@ router.post(
 );
 
 export default router;
+
+
+// if any post req will come then run sqlController
+//  sqlController(req,res);

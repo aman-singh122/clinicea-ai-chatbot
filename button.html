@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <title>PDF Upload Demo</title>
+
+  <style>
+
+    body{
+      background:#0f172a;
+      height:100vh;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      font-family:Arial;
+    }
+
+    .upload-btn{
+
+      background:#7c3aed;
+      color:white;
+
+      padding:16px 28px;
+
+      border-radius:12px;
+
+      cursor:pointer;
+
+      font-size:18px;
+
+      display:inline-flex;
+
+      align-items:center;
+
+      gap:10px;
+    }
+
+    .upload-btn:hover{
+      background:#6d28d9;
+    }
+
+    input[type="file"]{
+      display:none;
+    }
+
+    svg{
+      width:22px;
+      height:22px;
+    }
+
+  </style>
+</head>
+
+<body>
+
+  <!-- CUSTOM BUTTON -->
+  <label class="upload-btn" for="pdfInput">
+
+    <!-- ICON -->
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+      <polyline points="17 8 12 3 7 8"/>
+      <line x1="12" y1="3" x2="12" y2="15"/>
+    </svg>
+
+    Upload PDF
+
+  </label>
+
+  <!-- REAL FILE INPUT -->
+  <input
+    type="file"
+    id="pdfInput"
+    accept=".pdf"
+    multiple
+  />
+
+</body>
+</html>

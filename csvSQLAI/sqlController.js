@@ -1,220 +1,141 @@
 import path from "path";
 
-import { fileURLToPath }
-from "url";
+import { fileURLToPath } from "url";
 
-import csvToSqlite
-from "./csvToSqlite.js";
+import csvToSqlite from "./csvToSqlite.js";
 
-import sqlQueryGenerator
-from "./sqlQueryGenerator.js";
+import sqlQueryGenerator from "./sqlQueryGenerator.js";
 
-import graphDecisionEngine
-from "./graphDecisionEngine.js";
+import graphDecisionEngine from "./graphDecisionEngine.js";
 
-import graphGenerator
-from "./graphGenerator.js";
+import graphGenerator from "./graphGenerator.js";
 
+import executeSql from "./executeSql.js";
 
-import executeSql
-from "./executeSql.js";
+import sqlAnswerBuilder from "./sqlAnswerBuilder.js";
 
-
-import sqlAnswerBuilder
-from "./sqlAnswerBuilder.js";
-
-
-import datasetRouter
-from "./datasetRouter.js";
-
+import datasetRouter from "./datasetRouter.js";
 
 // =========================
 
-const __filename =
-  fileURLToPath(import.meta.url);
+const __filename = fileURLToPath(import.meta.url);
 
-const __dirname =
-  path.dirname(__filename);
-
+const __dirname = path.dirname(__filename);
 
 // =========================
 
 async function sqlController(req, res) {
-
   try {
+    
+    const { query, user } = req.body;
 
-  const {
-  query,
-  user
-} = req.body;
+    // =========================
+    // AUTO DATASET DETECTION
+    // =========================
 
-// =========================
-// AUTO DATASET DETECTION
-// =========================
 
-const dataset =
-  datasetRouter(query);
+    //query : show appointments by week day
 
-let file = "";
+    const dataset = datasetRouter(query);
 
-// =========================
-// FILE MAPPING
-// =========================
+    let file = "";
 
-if (dataset === "Appointments") {
+    // =========================
+    // FILE MAPPING
+    // =========================
 
-  file =
-    "Appointments Report-202605071242.csv";
-}
+    if (dataset === "Appointments") {
+      file = "Appointments Report-202605071242.csv";
+    } else if (dataset === "Bills") {
+      file = "Bills Report-202605071243.csv";
+    } else if (dataset === "BillItems") {
+      file = "Bill Items Report-202605071243.csv";
+    }
 
-else if (dataset === "Bills") {
+    console.log("\nDATASET:", dataset);
 
-  file =
-    "Bills Report-202605071243.csv";
-}
+    console.log("\nSELECTED FILE:", file);
 
-else if (dataset === "BillItems") {
+    const filePath = path.join(
+      __dirname,
 
-  file =
-    "Bill Items Report-202605071243.csv";
-}
-
-console.log(
-  "\nDATASET:",
-  dataset
-);
-
-console.log(
-  "\nSELECTED FILE:",
-  file
-);
-
-    const filePath =
-      path.join(
-
-        __dirname,
-
-        `../data/${user}/${file}`
-      );
+      `../data/${user}/${file}`,
+      // E:/Desktop_E/clinicea/Z-chatbot/data/user1/Appointments.csv
+    );
 
     // CSV → SQLITE
 
-    const db =
-      await csvToSqlite(filePath);
+    const db = await csvToSqlite(filePath);
 
     // GET COLUMNS
 
-    const columnsResult =
-      await db.all(`
+    const columnsResult = await db.all(`
         PRAGMA table_info(records)
+       
       `);
+       // PRAGMA table_info(records) is an SQLite command used to get the structure and column details of the records table.
 
-    const columns =
-      columnsResult.map(
-        col => col.name
-      );
+    const columns = columnsResult.map((col) => col.name);
 
     // AI SQL QUERY
 
-    const sql =
-      await sqlQueryGenerator(
-
-        query,
-        columns
-      );
+    const sql = await sqlQueryGenerator(query, columns);
 
     console.log("\nSQL:\n", sql);
 
     // EXECUTE SQL
 
-const result =
-  await executeSql(
-    db,
-    sql
-  );
+    const result = await executeSql(db, sql);
 
-console.log(
-  "\nREAL RESULT:\n",
-  result
-);
+    console.log("\nREAL RESULT:\n", result);
 
-const graphConfig =
+    const graphConfig = graphDecisionEngine(query, result);
 
-  graphDecisionEngine(
-    query,
-    result
-  );
+    let graphData = null;
 
-let graphData = null;
+    if (graphConfig.graph) {
+      graphData = graphGenerator(result);
+    }
 
-if (graphConfig.graph) {
+    console.log("\nGRAPH CONFIG:\n", graphConfig);
 
-  graphData =
-
-    graphGenerator(
-      result
-    );
-}
-
-console.log(
-  "\nGRAPH CONFIG:\n",
-  graphConfig
-);
-
-console.log(
-  "\nGRAPH DATA:\n",
-  graphData
-);
+    console.log("\nGRAPH DATA:\n", graphData);
     // NATURAL ANSWER
 
-    const answer =
-      await sqlAnswerBuilder(
-        query,
-        result
-      );
+    const answer = await sqlAnswerBuilder(query, result);
 
-res.json({
+    res.json({
+      success: true,
 
-  success: true,
+      type: "analytics",
 
-  type: "analytics",
+      explanation: answer,
 
-  explanation: answer,
+      data: result.map((item) => ({
+        label: Object.keys(item)[0],
 
-  data: result.map(
-    item => ({
+        value: Object.values(item)[0],
+      })),
 
-      label:
-        Object.keys(item)[0],
+      success: true,
 
-      value:
-        Object.values(item)[0]
-    })
-  ),
+      sql,
 
-  success: true,
+      result,
 
-sql,
+      answer,
 
-result,
+      graphConfig,
 
-answer,
-
-graphConfig,
-
-graphData
-});
-
+      graphData,
+    });
   } catch (error) {
-
     console.log(error);
 
     res.status(500).json({
-
       success: false,
 
-      answer:
-        "SQL AI failed."
+      answer: "SQL AI failed.",
     });
   }
 }

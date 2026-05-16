@@ -7,14 +7,12 @@ import { GoogleGenAI } from "@google/genai";
 import path from "path";
 import { fileURLToPath } from "url";
 import { createRequire } from "module";
-import analyticsRoutes from "./routes/analyticsRoutes.js";
-import csvRoutes
-from "../csvAI/csvRoutes.js";
+// import analyticsRoutes from "./routes/analyticsRoutes.js";
+import csvRoutes from "../csvAI/csvRoutes.js";
 
 import detectIntent from "./utils/detectIntent.js";
 
-import sqlRoutes
-from "../csvSQLAI/sqlRoutes.js";
+import sqlRoutes from "../csvSQLAI/sqlRoutes.js";
 
 // ================= DIR SETUP =================
 const __filename = fileURLToPath(import.meta.url);
@@ -43,8 +41,10 @@ app.use("/uploads", express.static(uploadsPath));
 app.use(cors({ origin: "*" }));
 app.use(express.json());
 app.use("/api", csvRoutes);
+
+
 app.use("/api", sqlRoutes);
-app.use("/api", analyticsRoutes);
+
 
 //video function
 
@@ -105,6 +105,7 @@ const storage = multer.diskStorage({
     }
 
     cb(null, dir);
+
   },
   filename: function (req, file, cb) {
     cb(null, Date.now() + "-" + file.originalname);
@@ -135,7 +136,7 @@ app.post("/upload", upload.single("file"), async (req, res) => {
 
     docs.push({
       user,
-      filename: req.file.originalname, // ✅ ADD THIS
+      filename: req.file.originalname, // ADD THIS
       content: data.text || "",
     });
 
@@ -177,14 +178,14 @@ app.post("/save-api-key", (req, res) => {
 
 // ===== BILL GENERATION FUNCTION =====
 function generateBill(user, patient, fileNo, extractedText) {
-  // 🔥 safety (important fix)
+  //  safety (important fix)
   extractedText = extractedText || "";
 
   const doc = new PDFDocument();
 
   const fileName = `bill_${patient}_${Date.now()}.pdf`;
 
-  // 🔥 user-wise folder
+  //  user-wise folder
   const userDir = path.join(uploadsPath, user);
 
   // create folder if not exists
@@ -208,7 +209,7 @@ function generateBill(user, patient, fileNo, extractedText) {
 
   doc.text("Treatment Summary:");
 
-  // 🔥 safe substring (no crash)
+  // safe substring (no crash)
   doc.text(
     extractedText.length > 0
       ? extractedText.substring(0, 200)
@@ -222,12 +223,13 @@ function generateBill(user, patient, fileNo, extractedText) {
 
   doc.end();
 
-  // 🔥 correct URL return
+  //  correct URL return
   return `http://localhost:5000/uploads/${user}/${fileName}`;
 }
 
 // ================= CHAT =================
 app.post("/chat", async (req, res) => {
+  
   try {
     const { user, query } = req.body;
 
@@ -246,6 +248,7 @@ app.post("/chat", async (req, res) => {
         patientsData = [];
       }
     }
+
 
     // current user patients
     const userPatientsObj = patientsData.find((p) => p.user === user);
@@ -299,76 +302,41 @@ app.post("/chat", async (req, res) => {
 
     const matchedVideo = findRelevantVideo(question, videos);
 
-  // =========================
-// PRIORITY MATCHING
-// =========================
+    // =========================
+    // PRIORITY MATCHING
+    // =========================
 
-let matchedPatients = [];
+    let matchedPatients = [];
 
+    // ===== PATIENT ID MATCH =====
 
-// ===== PATIENT ID MATCH =====
-
-matchedPatients =
-  userPatients.filter((p) =>
-
-    lowerQ.includes(
-      p.patientId.toLowerCase()
-    )
-  );
-
-
-// ===== FILE NO MATCH =====
-
-if (
-
-  matchedPatients.length === 0
-
-) {
-
-  matchedPatients =
-    userPatients.filter((p) =>
-
-      lowerQ.includes(
-        String(p.fileNo)
-      )
+    matchedPatients = userPatients.filter((p) =>
+      lowerQ.includes(p.patientId.toLowerCase()),
     );
-}
 
+    // ===== FILE NO MATCH =====
 
-// ===== FULL NAME MATCH =====
+    if (matchedPatients.length === 0) {
+      matchedPatients = userPatients.filter((p) =>
+        lowerQ.includes(String(p.fileNo)),
+      );
+    }
 
-if (
+    // ===== FULL NAME MATCH =====
 
-  matchedPatients.length === 0
+    if (matchedPatients.length === 0) {
+      matchedPatients = userPatients.filter((p) =>
+        lowerQ.includes(p.fullName.toLowerCase()),
+      );
+    }
 
-) {
+    // ===== SHORT NAME MATCH =====
 
-  matchedPatients =
-    userPatients.filter((p) =>
-
-      lowerQ.includes(
-        p.fullName.toLowerCase()
-      )
-    );
-}
-
-
-// ===== SHORT NAME MATCH =====
-
-if (
-
-  matchedPatients.length === 0
-
-) {
-
-  matchedPatients =
-    userPatients.filter((p) =>
-
-      lowerQ.includes(
-        p.name.toLowerCase()
-      )
-    );
-}
+    if (matchedPatients.length === 0) {
+      matchedPatients = userPatients.filter((p) =>
+        lowerQ.includes(p.name.toLowerCase()),
+      );
+    }
 
     // =========================
     // MULTIPLE MATCHES
@@ -447,32 +415,9 @@ Please provide patientId or file number.`,
     if (!userDocs && !cliniceaData) {
       return res.json({ answer: "No data available." });
     }
-    // ================= ANALYTICS ROUTING =================
-
-    if (intent.analytics && !intent.clinicea && !intent.video) {
-      const analyticsResponse = await fetch(
-        "http://localhost:5000/api/analytics",
-
-        {
-          method: "POST",
-
-          headers: {
-            "Content-Type": "application/json",
-          },
-
-          body: JSON.stringify({
-            user,
-
-            query: question,
-          }),
-        },
-      );
-
-      const analyticsData = await analyticsResponse.json();
-
-      return res.json(analyticsData);
-    }
-
+    
+    
+    
     // ================= GEMINI =================
     const ai = new GoogleGenAI({ apiKey });
 
@@ -519,8 +464,7 @@ STRICT RULES:
 * Use ONLY the provided context
 * Do NOT use external knowledge
 * Do NOT guess or hallucinate information
-* If the answer is unavailable, reply exactly:
-  Answer not found
+
 
 RESPONSE STYLE:
 
@@ -561,6 +505,33 @@ QUESTION:
 ${question}
 `;
 
+// ================= VIDEO PRIORITY RESPONSE =================
+
+if (matchedVideo) {
+
+  return res.json({
+
+    type: "video",
+
+    answer:
+      "Watch the tutorial video below to get your answer.",
+
+    video: {
+
+      title:
+        matchedVideo.title,
+
+      url:
+        matchedVideo.url,
+
+      thumbnail:
+        matchedVideo.thumbnail,
+
+      description:
+        matchedVideo.description,
+    }
+  });
+}
     const response = await chat.sendMessage({
       message: prompt,
     });
@@ -571,9 +542,11 @@ ${question}
       type: matchedVideo ? "video" : "text",
 
       answer:
-        response.candidates?.[0]?.content?.parts?.[0]?.text ||
         response.text ||
-        "Answer not found",
+        response.candidates?.[0]?.content?.parts?.[0]?.text ||
+        (matchedVideo
+          ? "Relevant Clinicea tutorial found below."
+          : "Answer not found"),
 
       video: matchedVideo
         ? {

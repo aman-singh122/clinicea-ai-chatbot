@@ -79,6 +79,7 @@ async function csvToSqlite(filePath) {
         sqlite3.Database
     });
 
+    
   // DROP OLD TABLE
 
   await db.exec(`
