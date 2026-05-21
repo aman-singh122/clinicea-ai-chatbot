@@ -35,6 +35,7 @@ const sendBtn = document.getElementById("sendBtn");
 const docList = document.getElementById("docList");
 const emptyDocs = document.getElementById("emptyDocs");
 const pdfInput = document.getElementById("pdfInput");
+const csvInput = document.getElementById("csvInput");
 const uploadProgress = document.getElementById("uploadProgress");
 const welcomeScreen = document.getElementById("welcomeScreen");
 const userSelect = document.getElementById("userSelect");
@@ -169,6 +170,46 @@ chatInput.addEventListener("keydown", (e) => {
 });
 
 // ── PDF UPLOAD ──
+
+// ── CSV / PARQUET UPLOAD ──
+
+csvInput.addEventListener(
+  "change",
+  async (e) => {
+
+    const files =
+      Array.from(e.target.files);
+
+    if (!files.length) return;
+
+    csvInput.value = "";
+
+    for (const file of files) {
+
+      const valid =
+
+        file.name.endsWith(".csv") ||
+
+        file.name.endsWith(".parquet");
+
+      if (!valid) {
+
+        showToast(
+          "Only CSV or Parquet allowed",
+          "error"
+        );
+
+        continue;
+      }
+
+      await uploadAnalyticsFile(file);
+
+    }
+
+  }
+);
+
+
 pdfInput.addEventListener("change", async (e) => {
   const files = Array.from(e.target.files);
   if (!files.length) return;
@@ -207,6 +248,76 @@ async function uploadFile(file) {
     showToast(file.name + " added (demo mode)", "success");
   }
 }
+
+
+async function uploadAnalyticsFile(file) {
+
+  uploadProgress.style.display = "flex";
+
+  const user =
+    userSelect.value;
+
+  const formData =
+    new FormData();
+
+  formData.append(
+    "file",
+    file
+  );
+
+  formData.append(
+    "user",
+    user
+  );
+
+  try {
+
+    const res =
+      await fetch(
+
+        "http://localhost:5000/api/upload-analytics",
+
+        {
+          method: "POST",
+
+          body: formData,
+        }
+      );
+
+    const data =
+      await res.json();
+
+    uploadProgress.style.display = "none";
+
+    if (res.ok) {
+
+      showToast(
+        file.name + " uploaded",
+        "success"
+      );
+
+    } else {
+
+      showToast(
+        data.error || "Upload failed",
+        "error"
+      );
+
+    }
+
+  } catch (error) {
+
+    uploadProgress.style.display = "none";
+
+    showToast(
+      "Upload failed",
+      "error"
+    );
+
+  }
+
+}
+
 
 function addDoc(name, size) {
   emptyDocs.style.display = "none";
@@ -259,7 +370,7 @@ function removeDoc(e, id) {
 // ── SEND MESSAGE ──
 async function sendMessage() {
   const text = chatInput.value.trim();
-  if (!text || isBusy) return;  
+  if (!text || isBusy) return;
 
   //show appointments by week day
 
@@ -278,10 +389,10 @@ async function sendMessage() {
   const typingId = showTyping();
 
   try {
-    let endpoint = "http://localhost:5000/chat"; //Normal chat 
+    let endpoint = "http://localhost:5000/chat"; //Normal chat
 
     let bodyData = {
-      user: userSelect.value, 
+      user: userSelect.value,
       query: text,
     };
 
@@ -309,13 +420,12 @@ async function sendMessage() {
         "Content-Type": "application/json",
       },
 
-      body: JSON.stringify(bodyData), 
+      body: JSON.stringify(bodyData),
 
-                         //   const bodyData = {
-                        //    query: "appointment status",    ==   '{"query":"appointment status","user":"user1"}'
-                       //     user: "user1"
-                      //                      };
-
+      //   const bodyData = {
+      //    query: "appointment status",    ==   '{"query":"appointment status","user":"user1"}'
+      //     user: "user1"
+      //                      };
     });
     const data = await res.json();
     removeTyping(typingId);
@@ -698,47 +808,65 @@ function saveChats() {
 function restoreCharts() {
   const analyticsCards = document.querySelectorAll(".analytics-ui");
 
-  analyticsCards.forEach((card) => {
+  analyticsCards.forEach((card, index) => {
     const graphData = card.dataset.graph;
 
     const graphType = card.dataset.type;
 
     if (!graphData || !graphType) return;
 
-    const canvas = card.querySelector(".analytics-chart");
+    const chartDiv = card.querySelector(".analytics-chart");
 
-    if (!canvas) return;
+    if (!chartDiv) return;
 
     const parsed = JSON.parse(graphData);
 
-    const ctx = canvas.getContext("2d");
+    const isPieChart = graphType === "pie" || graphType === "doughnut";
 
-    new Chart(ctx, {
-      type: graphType,
+    const chart = echarts.init(chartDiv);
 
-      data: {
-        labels: parsed.labels,
+    const option = {
+      tooltip: {
+        trigger: isPieChart ? "item" : "axis",
+      },
 
-        datasets: [
-          {
-            label: "Analytics",
-
-            data: parsed.values,
-
-            borderWidth: 2,
-
-            borderRadius: 8,
+      xAxis: isPieChart
+        ? undefined
+        : {
+            type: "category",
+            data: parsed.labels,
           },
-        ],
-      },
 
-      options: {
-        responsive: true,
+      yAxis: isPieChart
+        ? undefined
+        : {
+            type: "value",
+          },
 
-        animation: false,
+      series: [
+        {
+          data: isPieChart
+            ? parsed.labels.map((label, i) => ({
+                name: label,
+                value: parsed.values[i],
+              }))
+            : parsed.values,
 
-        maintainAspectRatio: false,
-      },
+          type: graphType,
+
+          smooth: !isPieChart,
+
+          radius: isPieChart ? "70%" : undefined,
+        },
+      ],
+    };
+
+    chart.setOption(option);
+
+    chart.resize();
+
+    window.addEventListener("resize", () => {
+      chart.resize();
     });
   });
 }
@@ -793,162 +921,6 @@ loadDocuments();
 loadChats();
 chatInput.focus();
 
-function renderAnalytics(data) {
-  const msgGroup = document.querySelector(".msg-group");
-
-  const row = document.createElement("div");
-
-  row.className = "msg-row bot";
-
-  row.innerHTML = `
-
-<div class="msg-avatar bot-avatar">
-  📊
-</div>
-
-<div class="msg-bubble analytics-ui">
-
-<div class="analytics-header">
-
-  <div>
-
-    <div style="
-      font-size:38px;
-      font-weight:700;
-      color:white;
-      line-height:1.1;
-    ">
-      Analytics Result
-    </div>
-
-    <div class="analytics-sub">
-      AI Generated CSV Analytics
-    </div>
-
-  </div>
-
-</div>
-
-<div class="analytics-explanation">
-  ${data.explanation}
-</div>
-
-${
-  data.graph
-    ? `
-
-      <div class="chart-container">
-
-        <canvas id="chart-${Date.now()}"></canvas>
-
-      </div>
-
-    `
-    : ""
-}
-  <table class="analytics-table">
-
-    <tr>
-      <th>Label</th>
-      <th>Value</th>
-    </tr>
-
-    ${data.data
-      .map(
-        (row) => `
-
-      <tr>
-        <td>${row.label}</td>
-        <td>${row.value}</td>
-      </tr>
-
-    `,
-      )
-      .join("")}
-
-  </table>
-
-</div>
-`;
-
-  const canvas = row.querySelector("canvas");
-
-  const labels = data.data.map((item) => item.label);
-
-  // =========================
-  // GRAPH RENDER
-  // =========================
-
-  if (data.graph) {
-    const canvas = row.querySelector("canvas");
-
-    const labels = data.data.map((item) => item.label);
-
-    const values = data.data.map((item) => item.value);
-
-    new Chart(canvas, {
-      type: data.graph.type === "horizontalBar" ? "bar" : data.graph.type,
-
-      data: {
-        labels,
-
-        datasets: [
-          {
-            label: "Analytics",
-
-            data: values,
-
-            borderWidth: 2,
-          },
-        ],
-      },
-
-      options: {
-        responsive: true,
-
-        maintainAspectRatio: false,
-
-        indexAxis: data.graph.type === "horizontalBar" ? "y" : "x",
-
-        plugins: {
-          legend: {
-            labels: {
-              color: "white",
-            },
-          },
-        },
-
-        scales: {
-          y: {
-            ticks: {
-              color: "white",
-            },
-
-            grid: {
-              color: "rgba(255,255,255,0.08)",
-            },
-          },
-
-          x: {
-            ticks: {
-              color: "white",
-            },
-
-            grid: {
-              color: "rgba(255,255,255,0.05)",
-            },
-          },
-        },
-      },
-    });
-  }
-
-  msgGroup.appendChild(row);
-
-  scrollBottom();
-
-  saveChats();
-}
 function openDashboard() {
   const panel = document.getElementById("billPanel");
 
@@ -1106,10 +1078,14 @@ function renderAnalytics(data) {
 
             <div class="chart-container">
 
-              <canvas
-                id="${chartId}"
-                class="analytics-chart"
-              ></canvas>
+            <div
+  id="${chartId}"
+  class="analytics-chart"
+  style="
+    width:100%;
+    height:450px;
+  "
+></div>
 
             </div>
 
@@ -1136,18 +1112,10 @@ function renderAnalytics(data) {
     data.graphData.labels?.length > 1
   ) {
     setTimeout(() => {
-      const canvas = document.getElementById(chartId);
+      const chartDiv = document.getElementById(chartId);
 
-      if (!canvas) {
-        console.log("Canvas not found");
-
-        return;
-      }
-
-      const ctx = canvas.getContext("2d");
-
-      if (!ctx) {
-        console.log("CTX not found");
+      if (!chartDiv) {
+        console.log("Chart div not found");
 
         return;
       }
@@ -1160,73 +1128,54 @@ function renderAnalytics(data) {
         data.graphConfig.graphType === "pie" ||
         data.graphConfig.graphType === "doughnut";
 
-      new Chart(ctx, {
-        type: data.graphConfig.graphType,
+      const chart = echarts.init(chartDiv);
 
-        data: {
-          labels: data.graphData.labels,
-
-          datasets: [
-            {
-              label: "Analytics",
-
-              data: data.graphData.values,
-
-              borderWidth: 2,
-
-              borderRadius: isPieChart ? 0 : 8,
-
-              tension: 0.4,
-
-              fill: false,
-            },
-          ],
+      const option = {
+        tooltip: {
+          trigger: isPieChart ? "item" : "axis",
         },
 
-        options: {
-          responsive: true,
-
-          animation: false,
-
-          maintainAspectRatio: false,
-
-          plugins: {
-            legend: {
-              labels: {
-                color: "white",
-              },
+        xAxis: isPieChart
+          ? undefined
+          : {
+              type: "category",
+              data: data.graphData.labels,
             },
+
+        yAxis: isPieChart
+          ? undefined
+          : {
+              type: "value",
+            },
+
+        series: [
+          {
+            data: isPieChart
+              ? data.graphData.labels.map((label, i) => ({
+                  name: label,
+                  value: data.graphData.values[i],
+                }))
+              : data.graphData.values,
+
+            type: data.graphConfig.graphType,
+
+            smooth: !isPieChart,
+
+            radius: isPieChart ? "70%" : undefined,
           },
+        ],
+      };
 
-          // =========================
-          // REMOVE AXES FOR PIE
-          // =========================
+      chart.setOption(option);
+      chart.resize();
 
-          ...(!isPieChart && {
-            scales: {
-              y: {
-                ticks: {
-                  color: "white",
-                },
+      const resizeHandler = () => {
+        chart.resize();
+      };
 
-                grid: {
-                  color: "rgba(255,255,255,0.06)",
-                },
-              },
+      window.removeEventListener("resize", resizeHandler);
 
-              x: {
-                ticks: {
-                  color: "white",
-                },
-
-                grid: {
-                  color: "rgba(255,255,255,0.04)",
-                },
-              },
-            },
-          }),
-        },
-      });
+      window.addEventListener("resize", resizeHandler);
     }, 0);
   }
 

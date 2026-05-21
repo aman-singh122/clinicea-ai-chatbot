@@ -42,23 +42,69 @@
             </div>
             <span class="logo-text">Clinicea_AI</span>
           </div>
-          <label class="upload-btn" for="pdfInput">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-              <polyline points="17 8 12 3 7 8" />
-              <line x1="12" y1="3" x2="12" y2="15" />
-            </svg>
-            Upload PDF
-          </label>
-          <input type="file" id="pdfInput" accept=".pdf" multiple />
-        </div>
+       <div class="upload-actions">
+
+  <!-- PDF -->
+
+  <label class="upload-btn" for="pdfInput">
+
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="17 8 12 3 7 8" />
+      <line x1="12" y1="3" x2="12" y2="15" />
+    </svg>
+
+    Upload PDF
+
+  </label>
+
+  <!-- CSV -->
+
+  <label
+    class="upload-btn csv-upload-btn"
+    for="csvInput"
+  >
+
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="17 8 12 3 7 8" />
+      <line x1="12" y1="3" x2="12" y2="15" />
+    </svg>
+
+    Upload CSV / Parquet
+
+  </label>
+
+</div>
+
+<input
+  type="file"
+  id="csvInput"
+  accept=".csv,.parquet"
+  multiple
+  hidden
+/>
+<input
+  type="file"
+  id="pdfInput"
+  accept=".pdf"
+  multiple
+  hidden
+/>        </div>
 
         <div class="sidebar-section-label">Documents</div>
 
@@ -369,6 +415,7 @@
 
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
      <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 

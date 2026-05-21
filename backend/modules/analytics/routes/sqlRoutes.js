@@ -1,7 +1,7 @@
 import express from "express";
 
 import sqlController
-from "./sqlController.js";
+from "../controllers/sqlController.js";
 
 const router =
   express.Router();

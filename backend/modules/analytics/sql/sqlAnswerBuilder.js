@@ -1,4 +1,4 @@
-import ai from "../config/gemini.js";
+import ai from "../../../../config/gemini.js";
 
 async function sqlAnswerBuilder(query, result) {
 
@@ -88,7 +88,19 @@ ${query}
 SQL RESULT
 ================================================
 
-${JSON.stringify(result, null, 2)}
+${JSON.stringify(
+
+  result,
+
+  (key, value) =>
+
+    typeof value === "bigint"
+      ? Number(value)
+      : value,
+
+  2
+
+)}
 
 `;
 
