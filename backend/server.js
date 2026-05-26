@@ -7,6 +7,8 @@ import { GoogleGenAI } from "@google/genai";
 import path from "path";
 import { fileURLToPath } from "url";
 import { createRequire } from "module";
+import dashboardRoutes
+from "./modules/analytics/dashboard/dashboardRoutes.js";
 // import analyticsRoutes from "./routes/analyticsRoutes.js";
 // import csvRoutes from "../csvAI/csvRoutes.js";
 
@@ -54,6 +56,11 @@ app.use("/api", sqlRoutes);
 app.use(
   "/api",
   uploadAnalyticsRoutes
+);
+
+app.use(
+  "/api",
+  dashboardRoutes
 );
 
 //video function

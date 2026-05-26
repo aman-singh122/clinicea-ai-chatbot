@@ -1,7 +1,8 @@
 import ai from "../../../../config/gemini.js";
 async function sqlQueryGenerator(
   query,
-  schemaInfo
+  schemaInfo,
+  semanticInfo
 ) {
 
   // =========================
@@ -279,6 +280,50 @@ Then:
 
 ORDER BY metric ASC
 
+
+
+================================================
+GROWTH / COMPARISON RULES
+================================================
+
+If the user asks about:
+
+- growth
+- increase
+- decrease
+- comparison
+- month-over-month
+- week-over-week
+- change
+- trend difference
+
+Then:
+
+Use SQL window functions like:
+
+LAG()
+OVER()
+
+to calculate:
+
+- difference
+- growth value
+- percentage growth
+
+instead of only returning totals.
+
+Example:
+
+revenue growth month by month
+should calculate:
+
+current_month_revenue
+-
+previous_month_revenue
+
+or growth percentage.
+================================================
+
 ================================================
 GRAPH OUTPUT RULES
 ================================================
@@ -321,6 +366,18 @@ INSERT
 DROP
 ALTER
 
+
+================================================
+BUSINESS CONTEXT
+================================================
+
+${JSON.stringify(
+  semanticInfo,
+  null,
+  2
+)}
+
+================================================
 ================================================
 AVAILABLE COLUMNS
 ================================================

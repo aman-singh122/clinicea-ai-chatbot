@@ -1,5 +1,13 @@
 import ai from "../../../../config/gemini.js";
 
+
+import datasetMetadata
+from "../semantic/datasetMetadata.js";
+
+import businessRules
+from "../semantic/businessRules.js";
+
+
 // =========================
 // SELECT BEST DATASET
 // =========================
@@ -16,22 +24,37 @@ async function selectDataset({
   // DATASET INFO
   // =========================
 
-  const datasetInfo =
+const datasetInfo =
 
-    datasets.map(dataset => ({
+  datasets.map(dataset => ({
 
-      dataset:
-        dataset.dataset,
+    dataset:
+      dataset.dataset,
 
-      columns:
+    purpose:
+      datasetMetadata[
+        dataset.dataset
+      ]?.purpose || "",
 
-        schemaMap[
-          dataset.dataset
-        ]?.map(
-          col => col.name
-        ) || []
+    domain:
+      datasetMetadata[
+        dataset.dataset
+      ]?.domain || "",
 
-    }));
+    businessRules:
+      businessRules[
+        dataset.dataset
+      ] || {},
+
+    columns:
+
+      schemaMap[
+        dataset.dataset
+      ]?.map(
+        col => col.name
+      ) || []
+
+}));
 
   // =========================
   // PROMPT

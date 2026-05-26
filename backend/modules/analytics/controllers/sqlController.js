@@ -12,6 +12,9 @@ from "../sql/validateSQL.js";
 import executeDuckQuery
 from "../duckdb/executeDuckQuery.js";
 
+import businessRules
+from "../semantic/businessRules.js";
+
 // =========================
 // AI + ANALYTICS
 // =========================
@@ -205,13 +208,17 @@ async function sqlController(
 
     const sql =
 
-      await sqlQueryGenerator(
+await sqlQueryGenerator(
 
-        query,
+  query,
 
-        schemaInfo
+  schemaInfo,
 
-      );
+  businessRules[
+    matchedDataset.dataset
+  ] || {}
+
+);
 
     console.log(
       "\nAI SQL:\n",

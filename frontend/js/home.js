@@ -798,36 +798,104 @@ function escHtml(s) {
 }
 
 function saveChats() {
-  const msgGroup = document.querySelector(".msg-group");
 
-  if (msgGroup) {
-    localStorage.setItem(`chat_${userSelect.value}`, msgGroup.innerHTML);
-  }
+  const msgGroup =
+
+    document.querySelector(".msg-group");
+
+  if (!msgGroup) return;
+
+  // =========================
+  // REMOVE ECHARTS INTERNALS
+  // =========================
+
+  const cloned =
+    msgGroup.cloneNode(true);
+
+  cloned
+    .querySelectorAll("canvas")
+    .forEach(canvas => {
+
+      canvas.remove();
+
+    });
+
+  // =========================
+  // SAVE CLEAN HTML
+  // =========================
+
+  localStorage.setItem(
+
+    `chat_${userSelect.value}`,
+
+    cloned.innerHTML
+
+  );
+
 }
 
 function restoreCharts() {
-  const analyticsCards = document.querySelectorAll(".analytics-ui");
 
-  analyticsCards.forEach((card, index) => {
-    const graphData = card.dataset.graph;
+  const analyticsCards =
 
-    const graphType = card.dataset.type;
+    document.querySelectorAll(
+      ".analytics-ui"
+    );
 
-    if (!graphData || !graphType) return;
+  analyticsCards.forEach((card) => {
 
-    const chartDiv = card.querySelector(".analytics-chart");
+    const graphData =
+      card.dataset.graph;
 
-    if (!chartDiv) return;
+    const graphType =
+      card.dataset.type;
 
-    const parsed = JSON.parse(graphData);
+    if (
+      !graphData ||
+      !graphType
+    ) {
+      return;
+    }
 
-    const isPieChart = graphType === "pie" || graphType === "doughnut";
+    const chartDiv =
+      card.querySelector(
+        ".analytics-chart"
+      );
 
-    const chart = echarts.init(chartDiv);
+    // IMPORTANT FIX
+    if (!chartDiv) {
+      return;
+    }
+
+    // PREVENT DOUBLE RESTORE
+    if (
+      chartDiv.dataset.restored ===
+      "true"
+    ) {
+      return;
+    }
+
+    chartDiv.dataset.restored =
+      "true";
+
+    const parsed =
+      JSON.parse(graphData);
+
+    const isPieChart =
+
+      graphType === "pie" ||
+      graphType === "doughnut";
+
+    const chart =
+      echarts.init(chartDiv);
 
     const option = {
+
       tooltip: {
-        trigger: isPieChart ? "item" : "axis",
+        trigger:
+          isPieChart
+            ? "item"
+            : "axis",
       },
 
       xAxis: isPieChart
@@ -846,17 +914,22 @@ function restoreCharts() {
       series: [
         {
           data: isPieChart
-            ? parsed.labels.map((label, i) => ({
-                name: label,
-                value: parsed.values[i],
-              }))
+            ? parsed.labels.map(
+                (label, i) => ({
+                  name: label,
+                  value:
+                    parsed.values[i],
+                })
+              )
             : parsed.values,
 
           type: graphType,
 
           smooth: !isPieChart,
 
-          radius: isPieChart ? "70%" : undefined,
+          radius: isPieChart
+            ? "70%"
+            : undefined,
         },
       ],
     };
@@ -865,10 +938,15 @@ function restoreCharts() {
 
     chart.resize();
 
-    window.addEventListener("resize", () => {
-      chart.resize();
-    });
+    window.addEventListener(
+      "resize",
+      () => {
+        chart.resize();
+      }
+    );
+
   });
+
 }
 
 function loadChats() {

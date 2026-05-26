@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>
+    Enterprise Analytics Dashboard
+  </title>
+
+  <!-- ========================= -->
+  <!-- CSS -->
+  <!-- ========================= -->
+
+  <link
+    rel="stylesheet"
+    href="css/dashboard1.css"
+  />
+
+  <!-- ========================= -->
+  <!-- CHART JS -->
+  <!-- ========================= -->
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- ========================= -->
+  <!-- ICONS -->
+  <!-- ========================= -->
+
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+  />
+
+</head>
+
+<body>
+
+  <!-- ========================= -->
+  <!-- SIDEBAR -->
+  <!-- ========================= -->
+
+  <aside class="sidebar">
+
+    <!-- ========================= -->
+    <!-- LOGO -->
+    <!-- ========================= -->
+
+    <div class="logo-section">
+
+      <div class="logo-circle">
+
+        <i class="fa-solid fa-chart-line"></i>
+
+      </div>
+
+      <div>
+
+        <h2>
+          Analytics
+        </h2>
+
+        <p>
+          Enterprise BI
+        </p>
+
+      </div>
+
+    </div>
+
+    <!-- ========================= -->
+    <!-- MENU -->
+    <!-- ========================= -->
+
+    <div class="menu-section">
+
+      <button
+        class="dashboard-btn active-btn"
+        onclick="loadAppointmentsDashboard()"
+      >
+
+        <i class="fa-solid fa-calendar-check"></i>
+
+        <span>
+          Appointments
+        </span>
+
+      </button>
+
+      <button
+        class="dashboard-btn"
+        onclick="loadBillsDashboard()"
+      >
+
+        <i class="fa-solid fa-file-invoice-dollar"></i>
+
+        <span>
+          Bills
+        </span>
+
+      </button>
+
+      <button
+        class="dashboard-btn"
+        onclick="loadBillItemsDashboard()"
+      >
+
+        <i class="fa-solid fa-pills"></i>
+
+        <span>
+          Bill Items
+        </span>
+
+      </button>
+
+    </div>
+
+    <!-- ========================= -->
+    <!-- FOOTER -->
+    <!-- ========================= -->
+
+    <div class="sidebar-footer">
+
+      <p>
+        AI Analytics Engine
+      </p>
+
+    </div>
+
+  </aside>
+
+  <!-- ========================= -->
+  <!-- MAIN -->
+  <!-- ========================= -->
+
+  <main class="main-content">
+
+    <!-- ========================= -->
+    <!-- TOP NAVBAR -->
+    <!-- ========================= -->
+
+    <header class="top-navbar">
+
+      <!-- ========================= -->
+      <!-- LEFT -->
+      <!-- ========================= -->
+
+      <div class="navbar-left">
+
+        <h1 id="dashboardTitle">
+          Appointments Dashboard
+        </h1>
+
+        <p class="dashboard-subtitle">
+
+          Real-time clinic analytics
+          and operational insights
+
+        </p>
+
+      </div>
+
+      <!-- ========================= -->
+      <!-- RIGHT -->
+      <!-- ========================= -->
+
+      <div class="navbar-right">
+
+        <!-- DATE FILTER -->
+
+     <!-- DATE FILTER -->
+
+<select
+
+  class="filter-select"
+
+  id="dateFilter"
+
+>
+
+  <option value="7">
+
+    Last 7 Days
+
+  </option>
+
+  <option
+    value="30"
+    selected
+  >
+
+    Last 30 Days
+
+  </option>
+
+  <option value="90">
+
+    Last 3 Months
+
+  </option>
+
+</select>
+
+<!-- DOCTOR FILTER -->
+
+<select
+
+  class="filter-select"
+
+  id="doctorFilter"
+
+>
+
+  <option value="all">
+
+    All Doctors
+
+  </option>
+
+</select>
+
+        <!-- SEARCH -->
+
+        <div class="search-box">
+
+          <i class="fa-solid fa-magnifying-glass"></i>
+
+          <input
+            type="text"
+            placeholder="Search analytics..."
+          />
+
+        </div>
+
+        <!-- REFRESH -->
+
+        <button class="icon-btn">
+
+          <i class="fa-solid fa-rotate-right"></i>
+
+        </button>
+
+        <!-- EXPORT -->
+
+        <button class="icon-btn">
+
+          <i class="fa-solid fa-download"></i>
+
+        </button>
+
+      </div>
+
+    </header>
+
+    <!-- ========================= -->
+    <!-- AI INSIGHT -->
+    <!-- ========================= -->
+
+    <section class="insight-banner">
+
+      <div class="insight-icon">
+
+        <i class="fa-solid fa-brain"></i>
+
+      </div>
+
+      <div>
+
+        <h3>
+          AI Insight
+        </h3>
+
+        <p id="aiInsight">
+
+          Revenue increased 18%
+          compared to last month.
+          Most cancellations happened
+          during weekends.
+
+        </p>
+
+      </div>
+
+    </section>
+
+    <!-- ========================= -->
+    <!-- KPI SECTION -->
+    <!-- ========================= -->
+
+    <section
+      class="kpi-container"
+      id="kpiContainer"
+    >
+
+    </section>
+
+    <!-- ========================= -->
+    <!-- CHARTS -->
+    <!-- ========================= -->
+
+    <section class="chart-grid">
+
+      <!-- ========================= -->
+      <!-- CHART 1 -->
+      <!-- ========================= -->
+
+      <div class="chart-card large-chart">
+
+        <div class="chart-header">
+
+          <h3>
+            Appointment Trend
+          </h3>
+
+          <button class="chart-btn">
+
+            Monthly
+
+          </button>
+
+        </div>
+
+        <canvas
+          id="chart1"
+        ></canvas>
+
+      </div>
+
+      <!-- ========================= -->
+      <!-- CHART 2 -->
+      <!-- ========================= -->
+
+      <div class="chart-card">
+
+        <div class="chart-header">
+
+          <h3>
+            Appointment Status
+          </h3>
+
+          <button class="chart-btn">
+
+            Pie View
+
+          </button>
+
+        </div>
+
+        <canvas
+          id="chart2"
+        ></canvas>
+
+      </div>
+
+    </section>
+
+    <!-- ========================= -->
+    <!-- SECOND ROW -->
+    <!-- ========================= -->
+
+    <section class="chart-grid">
+
+      <!-- TOP DOCTORS -->
+
+      <div class="chart-card">
+
+        <div class="chart-header">
+
+          <h3>
+            Top Doctors
+          </h3>
+
+        </div>
+
+        <canvas
+          id="chart3"
+        ></canvas>
+
+      </div>
+
+      <!-- CITY ANALYTICS -->
+
+      <div class="chart-card">
+
+        <div class="chart-header">
+
+          <h3>
+            City Analytics
+          </h3>
+
+        </div>
+
+        <canvas
+          id="chart4"
+        ></canvas>
+
+      </div>
+
+    </section>
+
+    <!-- ========================= -->
+    <!-- TABLE SECTION -->
+    <!-- ========================= -->
+
+<!-- ========================= -->
+<!-- DOCTOR PERFORMANCE -->
+<!-- ========================= -->
+
+<section class="full-width-section">
+
+  <div class="chart-card doctor-analytics-card">
+
+    <div class="chart-header">
+
+      <div>
+
+        <h3>
+          Doctor Performance Analytics
+        </h3>
+
+        <p class="section-subtitle">
+
+          Revenue, appointments,
+          completion rate and
+          operational performance
+          overview
+
+        </p>
+
+      </div>
+
+      <button class="chart-btn">
+
+        Top 50 Doctors
+
+      </button>
+
+    </div>
+
+    <div id="topDoctorsTable"></div>
+
+  </div>
+
+</section>
+
+<!-- ========================= -->
+<!-- DETAILED ANALYTICS -->
+<!-- ========================= -->
+
+<section class="table-wrapper">
+
+  <div class="table-header">
+
+    <div>
+
+      <h3>
+        Detailed Appointment Analytics
+      </h3>
+
+      <p class="section-subtitle">
+
+        Real-time patient level
+        operational records
+
+      </p>
+
+    </div>
+
+    <div class="table-actions">
+
+      <button class="chart-btn">
+
+        Export CSV
+
+      </button>
+
+    </div>
+
+  </div>
+
+  <div class="table-section">
+
+    <table
+      id="analyticsTable"
+    ></table>
+
+  </div>
+
+</section>
+
+  </main>
+
+  <!-- ========================= -->
+  <!-- JS -->
+  <!-- ========================= -->
+
+  <script
+    src="js/dashboard1.js"
+  ></script>
+
+</body>
+
+</html>

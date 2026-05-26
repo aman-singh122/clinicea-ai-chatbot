@@ -7,8 +7,14 @@ function validateSQL(sql) {
   let cleanedSQL =
 
     sql
+
       .replace(/--.*$/gm, "")
-      .replace(/\/\*[\s\S]*?\*\//g, "")
+
+      .replace(
+        /\/\*[\s\S]*?\*\//g,
+        ""
+      )
+
       .trim();
 
   // =========================
@@ -29,13 +35,17 @@ function validateSQL(sql) {
 
   const semicolonCount =
 
-    (cleanedSQL.match(/;/g) || [])
-      .length;
+    (
+      cleanedSQL.match(/;/g)
+      || []
+    ).length;
 
   if (semicolonCount > 1) {
 
     throw new Error(
+
       "Multiple SQL statements are not allowed."
+
     );
 
   }
@@ -45,7 +55,11 @@ function validateSQL(sql) {
   // =========================
 
   cleanedSQL =
-    cleanedSQL.replace(/;$/, "");
+
+    cleanedSQL.replace(
+      /;$/,
+      ""
+    );
 
   // =========================
   // NORMALIZE
@@ -53,23 +67,41 @@ function validateSQL(sql) {
 
   const normalizedSQL =
 
-    cleanedSQL.toUpperCase();
+    cleanedSQL
+      .trim()
+      .toUpperCase();
 
   // =========================
-  // ONLY SELECT ALLOWED
+  // ALLOW:
+  // SELECT
+  // WITH (CTE)
   // =========================
 
-  if (
+  const allowedStarts = [
 
-    !normalizedSQL.startsWith(
-      "SELECT"
-    )
+    "SELECT",
 
-  ) {
+    "WITH"
+
+  ];
+
+  const validStart =
+
+    allowedStarts.some(
+
+      keyword =>
+
+        normalizedSQL.startsWith(
+          keyword
+        )
+
+    );
+
+  if (!validStart) {
 
     throw new Error(
 
-      "Only SELECT queries are allowed."
+      "Only SELECT/CTE analytics queries are allowed."
 
     );
 
@@ -91,16 +123,25 @@ function validateSQL(sql) {
     "REPLACE",
     "MERGE",
     "GRANT",
-    "REVOKE"
+    "REVOKE",
+    "ATTACH",
+    "DETACH",
+    "COPY",
+    "EXPORT",
+    "IMPORT"
 
   ];
 
   for (const keyword of blockedKeywords) {
 
     const regex =
+
       new RegExp(
+
         `\\b${keyword}\\b`,
+
         "i"
+
       );
 
     if (regex.test(cleanedSQL)) {
@@ -116,16 +157,65 @@ function validateSQL(sql) {
   }
 
   // =========================
+  // BLOCK SYSTEM TABLE ACCESS
+  // =========================
+
+  const blockedSystemPatterns = [
+
+    /information_schema/i,
+
+    /pg_/i,
+
+    /sqlite_master/i
+
+  ];
+
+  for (const pattern of blockedSystemPatterns) {
+
+    if (pattern.test(cleanedSQL)) {
+
+      throw new Error(
+
+        "System table access is not allowed."
+
+      );
+
+    }
+
+  }
+
+  // =========================
   // AUTO LIMIT PROTECTION
   // =========================
 
   const hasLimit =
 
-    /\bLIMIT\b/i.test(cleanedSQL);
+    /\bLIMIT\b/i.test(
+      cleanedSQL
+    );
 
-  if (!hasLimit) {
+  // don't inject LIMIT
+  // if query already contains
+  // window/ranking logic
 
-    cleanedSQL += "\nLIMIT 100";
+  const complexQuery =
+
+    /\bOVER\b/i.test(
+      cleanedSQL
+    );
+
+  if (
+
+    !hasLimit
+
+    &&
+
+    !complexQuery
+
+  ) {
+
+    cleanedSQL +=
+      "\nLIMIT 100";
 
   }
 
