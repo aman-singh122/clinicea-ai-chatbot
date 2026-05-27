@@ -3,16 +3,183 @@ function graphDecisionEngine(
   result
 ) {
 
-  const q =
-    query.toLowerCase();
-
   // =========================
-  // EMPTY RESULT
+  // BASIC VALIDATION
   // =========================
 
   if (
+
     !result ||
+
+    !Array.isArray(result) ||
+
     result.length === 0
+
+  ) {
+
+    return {
+
+      graph: false
+
+    };
+
+  }
+
+  const q =
+    query.toLowerCase();
+
+  const firstRow =
+    result[0];
+
+  const columns =
+    Object.keys(firstRow);
+
+  if (
+
+    columns.length < 2
+
+  ) {
+
+    return {
+
+      graph: false
+
+    };
+
+  }
+
+  const rowCount =
+    result.length;
+
+  // =========================
+  // SMART NUMERIC COLUMN
+  // =========================
+
+  const numericColumn =
+
+    columns.find(col => {
+
+      return result.some(row => {
+
+       const value =
+  Number(
+    String(row[col])
+      .replace(/,/g, "")
+      .replace(/₹/g, "")
+      .replace(/%/g, "")
+      .trim()
+  );
+
+        return !isNaN(value);
+
+      });
+
+    });
+
+  // =========================
+  // SMART TEXT COLUMN
+  // =========================
+
+const preferredTextColumns = [
+
+  "doctor",
+  "Doctor",
+  "For",
+
+  "patient",
+  "Patient",
+  "ApptWithFullName",
+
+  "city",
+  "City",
+
+  "status",
+  "Status",
+
+  "category",
+  "Category",
+
+  "department",
+  "Department",
+
+  "service",
+  "Service",
+
+  "name",
+  "Name"
+
+];
+
+  const textColumn =
+
+    preferredTextColumns.find(
+      preferred =>
+        columns.includes(preferred)
+    )
+
+    ||
+
+    columns.find(col => {
+
+      return result.some(row => {
+
+        return (
+
+          typeof row[col] ===
+          "string"
+
+        );
+
+      });
+
+    });
+
+  // =========================
+  // NO NUMERIC DATA
+  // =========================
+
+  if (!numericColumn) {
+
+    return {
+
+      graph: false
+
+    };
+
+  }
+
+  // =========================
+  // DEFAULT CONFIG
+  // =========================
+
+  const config = {
+
+    graph: true,
+
+    graphType: "bar",
+
+    title: "Analytics Chart",
+
+    xAxis:
+      textColumn || columns[0],
+
+    yAxis:
+      numericColumn,
+
+    horizontal: false,
+
+    stacked: false
+
+  };
+
+  // =========================
+  // HUGE TABLES
+  // =========================
+
+  if (
+
+    rowCount > 120
+
   ) {
 
     return {
@@ -24,73 +191,38 @@ function graphDecisionEngine(
   }
 
   // =========================
-  // COLUMN DETECTION
+  // TIME / TREND ANALYSIS
   // =========================
 
-  const firstRow =
-    result[0];
-
-  const columns =
-    Object.keys(firstRow);
-
-  // =========================
-  // GRAPH CONFIG
-  // =========================
-
-  const config = {
-
-    graph: true,
-
-    graphType: "bar",
-
-    title: "Analytics Chart",
-
-    xAxis: columns[0],
-
-    yAxis: columns[1],
-
-    horizontal: false,
-
-    stacked: false
-
-  };
-
-  // =========================
-  // ROW COUNT
-  // =========================
-
-  const rowCount =
-    result.length;
-
-  // =========================
-  // TIME DETECTION
-  // =========================
-
-  const timeWords = [
+  const trendWords = [
 
     "trend",
+    "timeline",
+    "growth",
+
     "monthly",
     "daily",
+    "weekly",
     "yearly",
-    "timeline",
+
     "over time",
-    "growth",
-    "week",
-    "weekday",
-    "month",
-    "date"
+
+    "date",
+    "hour",
+    "time"
 
   ];
 
   if (
 
-    timeWords.some(
+    trendWords.some(
       word => q.includes(word)
     )
 
   ) {
 
-    config.graphType = "line";
+    config.graphType =
+      "line";
 
     config.title =
       "Trend Analysis";
@@ -107,8 +239,9 @@ function graphDecisionEngine(
 
     "distribution",
     "share",
-    "percentage",
-    "ratio"
+    "status",
+    "ratio",
+    "percentage"
 
   ];
 
@@ -120,18 +253,13 @@ function graphDecisionEngine(
 
   ) {
 
-    // Too many categories
-    // pie looks ugly
+    config.graphType =
 
-    if (rowCount <= 8) {
+      rowCount <= 8
 
-      config.graphType = "pie";
+        ? "pie"
 
-    } else {
-
-      config.graphType = "bar";
-
-    }
+        : "bar";
 
     config.title =
       "Distribution Analysis";
@@ -141,78 +269,7 @@ function graphDecisionEngine(
   }
 
   // =========================
-  // CORRELATION
-  // =========================
-
-  const correlationWords = [
-
-    "relationship",
-    "correlation",
-    "impact",
-    "compare duration"
-
-  ];
-
-  if (
-
-    correlationWords.some(
-      word => q.includes(word)
-    )
-
-  ) {
-
-    config.graphType =
-      "scatter";
-
-    config.title =
-      "Correlation Analysis";
-
-    return config;
-
-  }
-
-  // =========================
-  // STACKED BAR
-  // =========================
-
-  if (
-
-    q.includes("status by") ||
-
-    q.includes("category by") ||
-
-    q.includes("grouped")
-
-  ) {
-
-    config.graphType =
-      "stackedBar";
-
-    config.stacked = true;
-
-    config.title =
-      "Grouped Comparison";
-
-    return config;
-
-  }
-
-  // =========================
-  // HORIZONTAL BAR
-  // =========================
-
-  if (
-
-    rowCount > 10
-
-  ) {
-
-    config.horizontal = true;
-
-  }
-
-  // =========================
-  // REVENUE
+  // REVENUE ANALYSIS
   // =========================
 
   if (
@@ -221,12 +278,22 @@ function graphDecisionEngine(
 
     q.includes("sales") ||
 
+    q.includes("income") ||
+
     q.includes("earnings")
 
   ) {
 
     config.graphType =
-      "bar";
+
+      rowCount > 5
+
+        ? "horizontalBar"
+
+        : "bar";
+
+    config.horizontal =
+      rowCount > 5;
 
     config.title =
       "Revenue Analysis";
@@ -239,20 +306,33 @@ function graphDecisionEngine(
   // TOP ANALYSIS
   // =========================
 
+  const topWords = [
+
+    "top",
+    "highest",
+    "best",
+    "most"
+
+  ];
+
   if (
 
-    q.includes("top") ||
-
-    q.includes("highest") ||
-
-    q.includes("best") ||
-
-    q.includes("most")
+    topWords.some(
+      word => q.includes(word)
+    )
 
   ) {
 
     config.graphType =
-      "bar";
+
+      rowCount > 5
+
+        ? "horizontalBar"
+
+        : "bar";
+
+    config.horizontal =
+      rowCount > 5;
 
     config.title =
       "Top Performance Analysis";
@@ -262,7 +342,47 @@ function graphDecisionEngine(
   }
 
   // =========================
-  // DEFAULT
+  // COMPARISON
+  // =========================
+
+  if (
+
+    q.includes("compare") ||
+
+    q.includes("comparison") ||
+
+    q.includes("vs")
+
+  ) {
+
+    config.graphType =
+      "bar";
+
+    config.title =
+      "Comparison Analysis";
+
+    return config;
+
+  }
+
+  // =========================
+  // LARGE TABLES
+  // =========================
+
+if (
+  rowCount > 80
+) {
+
+    return {
+
+      graph: false
+
+    };
+
+  }
+
+  // =========================
+  // DEFAULT SMALL ANALYTICS
   // =========================
 
   return config;

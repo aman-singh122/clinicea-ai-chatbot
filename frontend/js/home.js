@@ -173,42 +173,25 @@ chatInput.addEventListener("keydown", (e) => {
 
 // ── CSV / PARQUET UPLOAD ──
 
-csvInput.addEventListener(
-  "change",
-  async (e) => {
+csvInput.addEventListener("change", async (e) => {
+  const files = Array.from(e.target.files);
 
-    const files =
-      Array.from(e.target.files);
+  if (!files.length) return;
 
-    if (!files.length) return;
+  csvInput.value = "";
 
-    csvInput.value = "";
+  for (const file of files) {
+    const valid = file.name.endsWith(".csv") || file.name.endsWith(".parquet");
 
-    for (const file of files) {
+    if (!valid) {
+      showToast("Only CSV or Parquet allowed", "error");
 
-      const valid =
-
-        file.name.endsWith(".csv") ||
-
-        file.name.endsWith(".parquet");
-
-      if (!valid) {
-
-        showToast(
-          "Only CSV or Parquet allowed",
-          "error"
-        );
-
-        continue;
-      }
-
-      await uploadAnalyticsFile(file);
-
+      continue;
     }
 
+    await uploadAnalyticsFile(file);
   }
-);
-
+});
 
 pdfInput.addEventListener("change", async (e) => {
   const files = Array.from(e.target.files);
@@ -249,75 +232,43 @@ async function uploadFile(file) {
   }
 }
 
-
 async function uploadAnalyticsFile(file) {
-
   uploadProgress.style.display = "flex";
 
-  const user =
-    userSelect.value;
+  const user = userSelect.value;
 
-  const formData =
-    new FormData();
+  const formData = new FormData();
 
-  formData.append(
-    "file",
-    file
-  );
+  formData.append("file", file);
 
-  formData.append(
-    "user",
-    user
-  );
+  formData.append("user", user);
 
   try {
+    const res = await fetch(
+      "http://localhost:5000/api/upload-analytics",
 
-    const res =
-      await fetch(
+      {
+        method: "POST",
 
-        "http://localhost:5000/api/upload-analytics",
+        body: formData,
+      },
+    );
 
-        {
-          method: "POST",
-
-          body: formData,
-        }
-      );
-
-    const data =
-      await res.json();
+    const data = await res.json();
 
     uploadProgress.style.display = "none";
 
     if (res.ok) {
-
-      showToast(
-        file.name + " uploaded",
-        "success"
-      );
-
+      showToast(file.name + " uploaded", "success");
     } else {
-
-      showToast(
-        data.error || "Upload failed",
-        "error"
-      );
-
+      showToast(data.error || "Upload failed", "error");
     }
-
   } catch (error) {
-
     uploadProgress.style.display = "none";
 
-    showToast(
-      "Upload failed",
-      "error"
-    );
-
+    showToast("Upload failed", "error");
   }
-
 }
-
 
 function addDoc(name, size) {
   emptyDocs.style.display = "none";
@@ -798,10 +749,7 @@ function escHtml(s) {
 }
 
 function saveChats() {
-
-  const msgGroup =
-
-    document.querySelector(".msg-group");
+  const msgGroup = document.querySelector(".msg-group");
 
   if (!msgGroup) return;
 
@@ -809,141 +757,386 @@ function saveChats() {
   // REMOVE ECHARTS INTERNALS
   // =========================
 
-  const cloned =
-    msgGroup.cloneNode(true);
+  const cloned = msgGroup.cloneNode(true);
 
-  cloned
-    .querySelectorAll("canvas")
-    .forEach(canvas => {
-
-      canvas.remove();
-
-    });
+  cloned.querySelectorAll("canvas").forEach((canvas) => {
+    canvas.remove();
+  });
 
   // =========================
   // SAVE CLEAN HTML
   // =========================
 
   localStorage.setItem(
-
     `chat_${userSelect.value}`,
 
-    cloned.innerHTML
-
+    cloned.innerHTML,
   );
-
 }
 
 function restoreCharts() {
 
   const analyticsCards =
-
-    document.querySelectorAll(
-      ".analytics-ui"
-    );
+    document.querySelectorAll(".analytics-ui");
 
   analyticsCards.forEach((card) => {
 
-    const graphData =
-      card.dataset.graph;
+    try {
 
-    const graphType =
-      card.dataset.type;
+      // =========================
+      // DATA
+      // =========================
 
-    if (
-      !graphData ||
-      !graphType
-    ) {
-      return;
-    }
+      const graphData =
+        card.dataset.graph;
 
-    const chartDiv =
-      card.querySelector(
-        ".analytics-chart"
+      const graphType =
+        card.dataset.type;
+
+      // =========================
+      // VALIDATION
+      // =========================
+
+      if (
+        !graphData ||
+        !graphType
+      ) {
+        return;
+      }
+
+      const chartDiv =
+        card.querySelector(
+          ".analytics-chart"
+        );
+
+      if (!chartDiv) {
+        return;
+      }
+
+      // =========================
+      // PREVENT DOUBLE RENDER
+      // =========================
+
+      if (
+        chartDiv.dataset.restored ===
+        "true"
+      ) {
+        return;
+      }
+
+      chartDiv.dataset.restored =
+        "true";
+
+      // =========================
+      // PARSE GRAPH
+      // =========================
+
+      const parsed =
+        JSON.parse(graphData);
+
+      // =========================
+      // SAFETY
+      // =========================
+
+      if (
+        !parsed ||
+        !parsed.labels ||
+        !parsed.values
+      ) {
+        return;
+      }
+
+      // =========================
+      // GRAPH TYPES
+      // =========================
+
+      const isPieChart =
+
+        graphType === "pie" ||
+
+        graphType === "doughnut";
+
+      const isHorizontalBar =
+
+        graphType === "horizontalBar";
+
+      const realChartType =
+
+        isHorizontalBar
+          ? "bar"
+          : graphType;
+
+      // =========================
+      // DESTROY OLD CHART
+      // =========================
+
+      if (
+        chartDiv.highchartsChart !==
+        undefined
+      ) {
+
+        Highcharts
+          .charts[
+            chartDiv.highchartsChart
+          ]
+          ?.destroy();
+
+      }
+
+      // =========================
+      // CREATE CHART
+      // =========================
+
+      Highcharts.chart(chartDiv, {
+
+        chart: {
+
+          type:
+            isHorizontalBar
+              ? "bar"
+              : realChartType,
+
+          backgroundColor:
+            "transparent",
+
+          animation: true,
+
+          height:
+
+            parsed.labels.length > 8
+
+              ? parsed.labels.length * 65
+
+              : 500,
+
+          spacingLeft:
+            isHorizontalBar
+              ? 40
+              : 10,
+
+          spacingRight: 20,
+
+          spacingTop: 20,
+
+          spacingBottom: 20,
+
+        },
+
+        // =========================
+        // TITLE
+        // =========================
+
+        title: {
+          text: null,
+        },
+
+        // =========================
+        // CREDITS
+        // =========================
+
+        credits: {
+          enabled: false,
+        },
+
+        exporting: {
+          enabled: false,
+        },
+
+        // =========================
+        // X AXIS
+        // =========================
+
+        xAxis:
+
+          isPieChart
+
+            ? undefined
+
+            : {
+
+                categories:
+                  parsed.labels,
+
+                labels: {
+
+                  rotation:
+
+                    !isHorizontalBar &&
+
+                    parsed.labels.length > 5
+
+                      ? -30
+
+                      : 0,
+
+                  style: {
+
+                    color:
+                      "#cbd5e1",
+
+                    fontSize:
+                      isHorizontalBar
+                        ? "12px"
+                        : "11px",
+
+                    textOverflow:
+                      "ellipsis",
+
+                  },
+
+                },
+
+              },
+
+        // =========================
+        // Y AXIS
+        // =========================
+
+        yAxis:
+
+          isPieChart
+
+            ? undefined
+
+            : {
+
+                title: {
+                  text: null,
+                },
+
+                labels: {
+
+                  style: {
+
+                    color:
+                      "#cbd5e1",
+
+                    fontSize:
+                      "11px",
+
+                  },
+
+                },
+
+              },
+
+        // =========================
+        // TOOLTIP
+        // =========================
+
+        tooltip: {
+
+          backgroundColor:
+            "#111827",
+
+          borderColor:
+            "#2a3441",
+
+          style: {
+            color: "#ffffff",
+          },
+
+          shared:
+            !isPieChart,
+
+        },
+
+        // =========================
+        // LEGEND
+        // =========================
+
+        legend: {
+          enabled: false,
+        },
+
+        // =========================
+        // PLOT OPTIONS
+        // =========================
+
+        plotOptions: {
+
+          series: {
+
+            animation: {
+              duration: 700,
+            },
+
+            borderRadius: 6,
+
+            dataLabels: {
+              enabled: false,
+            },
+
+          },
+
+          pie: {
+
+            innerSize:
+
+              graphType === "doughnut"
+
+                ? "55%"
+
+                : "0%",
+
+            allowPointSelect: true,
+
+            cursor: "pointer",
+
+            dataLabels: {
+
+              enabled: true,
+
+              style: {
+                color: "#ffffff",
+              },
+
+            },
+
+          },
+
+        },
+
+        // =========================
+        // SERIES
+        // =========================
+
+        series: [
+
+          {
+
+            name: "Value",
+
+            color:
+              "#7c6af7",
+
+            data:
+
+              isPieChart
+
+                ? parsed.labels.map(
+                    (label, i) => ({
+                      name: label,
+                      y: parsed.values[i],
+                    })
+                  )
+
+                : parsed.values,
+
+          },
+
+        ],
+
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Chart restore failed:",
+        error
       );
 
-    // IMPORTANT FIX
-    if (!chartDiv) {
-      return;
     }
-
-    // PREVENT DOUBLE RESTORE
-    if (
-      chartDiv.dataset.restored ===
-      "true"
-    ) {
-      return;
-    }
-
-    chartDiv.dataset.restored =
-      "true";
-
-    const parsed =
-      JSON.parse(graphData);
-
-    const isPieChart =
-
-      graphType === "pie" ||
-      graphType === "doughnut";
-
-    const chart =
-      echarts.init(chartDiv);
-
-    const option = {
-
-      tooltip: {
-        trigger:
-          isPieChart
-            ? "item"
-            : "axis",
-      },
-
-      xAxis: isPieChart
-        ? undefined
-        : {
-            type: "category",
-            data: parsed.labels,
-          },
-
-      yAxis: isPieChart
-        ? undefined
-        : {
-            type: "value",
-          },
-
-      series: [
-        {
-          data: isPieChart
-            ? parsed.labels.map(
-                (label, i) => ({
-                  name: label,
-                  value:
-                    parsed.values[i],
-                })
-              )
-            : parsed.values,
-
-          type: graphType,
-
-          smooth: !isPieChart,
-
-          radius: isPieChart
-            ? "70%"
-            : undefined,
-        },
-      ],
-    };
-
-    chart.setOption(option);
-
-    chart.resize();
-
-    window.addEventListener(
-      "resize",
-      () => {
-        chart.resize();
-      }
-    );
 
   });
 
@@ -1156,12 +1349,13 @@ function renderAnalytics(data) {
 
             <div class="chart-container">
 
-            <div
+<div
   id="${chartId}"
   class="analytics-chart"
   style="
-    width:100%;
-    height:450px;
+    width: 100%;
+    min-height: ${Math.max(data.graphData.labels.length * 55, 420)}px;
+    height: auto;
   "
 ></div>
 
@@ -1202,62 +1396,168 @@ function renderAnalytics(data) {
 
       console.log("GRAPH DATA:", data.graphData);
 
-      const isPieChart =
-        data.graphConfig.graphType === "pie" ||
-        data.graphConfig.graphType === "doughnut";
 
-      const chart = echarts.init(chartDiv);
 
-      const option = {
-        tooltip: {
-          trigger: isPieChart ? "item" : "axis",
-        },
+      const graphType = data.graphConfig.graphType;
 
-        xAxis: isPieChart
-          ? undefined
-          : {
-              type: "category",
-              data: data.graphData.labels,
-            },
+      const parsed = data.graphData;
 
-        yAxis: isPieChart
-          ? undefined
-          : {
-              type: "value",
-            },
+      // =========================
+      // CHART TYPE
+      // =========================
 
-        series: [
-          {
-            data: isPieChart
-              ? data.graphData.labels.map((label, i) => ({
-                  name: label,
-                  value: data.graphData.values[i],
-                }))
-              : data.graphData.values,
+      const isPieChart = graphType === "pie" || graphType === "doughnut";
 
-            type: data.graphConfig.graphType,
+      const isHorizontalBar = graphType === "horizontalBar";
 
-            smooth: !isPieChart,
+      const realChartType = isHorizontalBar ? "bar" : graphType;
 
-            radius: isPieChart ? "70%" : undefined,
-          },
-        ],
-      };
+      // =========================
+      // OPTION
+      // =========================
 
-      chart.setOption(option);
-      chart.resize();
+        Highcharts.chart(chartDiv, {
 
-      const resizeHandler = () => {
-        chart.resize();
-      };
+ chart: {
 
-      window.removeEventListener("resize", resizeHandler);
+  type: isHorizontalBar
+    ? "bar"
+    : realChartType,
 
-      window.addEventListener("resize", resizeHandler);
+  backgroundColor: "transparent",
+
+  spacingLeft:
+    isHorizontalBar
+      ? 120
+      : 20,
+
+  spacingRight: 40,
+
+  height: isHorizontalBar
+    ? Math.max(
+        parsed.labels.length * 55,
+        650
+      )
+    : 500
+
+},
+
+  title: {
+    text: null
+  },
+
+  credits: {
+    enabled: false
+  },
+
+  exporting: {
+    enabled: false
+  },
+
+  xAxis: isHorizontalBar
+
+    ? {
+
+        categories: parsed.labels,
+
+        labels: {
+reserveSpace: true,
+          style: {
+            color: "#cbd5e1",
+            
+            fontSize: "12px"
+          }
+
+        }
+
+      }
+
+    : {
+
+        categories: parsed.labels,
+
+        labels: {
+
+          rotation:
+            parsed.labels.length > 5
+              ? -35
+              : 0,
+
+          style: {
+            color: "#cbd5e1",
+            fontSize: "11px"
+          }
+
+        }
+
+      },
+
+  yAxis: {
+
+    title: {
+      text: null
+    },
+
+    labels: {
+
+      style: {
+        color: "#cbd5e1",
+        fontSize: "11px"
+      }
+
+    }
+
+  },
+
+  legend: {
+    enabled: false
+  },
+
+  tooltip: {
+
+    backgroundColor: "#111827",
+
+    style: {
+      color: "#ffffff"
+    }
+
+  },
+
+  plotOptions: {
+
+    series: {
+
+      borderRadius: 6,
+
+      dataLabels: {
+        enabled: false
+      }
+
+    }
+
+  },
+
+  series: [
+
+    {
+
+      data: parsed.values,
+
+      color: "#7c6af7"
+
+    }
+
+  ]
+
+});
+
+
     }, 0);
   }
 
   scrollBottom();
 
-  saveChats();
+  setTimeout(() => {
+    saveChats();
+  }, 800);
 }

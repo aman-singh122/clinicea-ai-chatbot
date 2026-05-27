@@ -285,21 +285,26 @@ function commonChartOptions() {
 // =====================================
 
 function switchTrend(type) {
+
   if (!dashboardCache) return;
 
   document.querySelectorAll(".trend-tab").forEach((tab) => {
     tab.classList.remove("active-tab");
   });
 
-  const activeButton = document.querySelector(`[data-trend="${type}"]`);
+  const activeButton =
+    document.querySelector(`[data-trend="${type}"]`);
 
   if (activeButton) {
     activeButton.classList.add("active-tab");
   }
 
   let labels = [];
+
   let values = [];
+
   let label = "";
+
   let chartType = "line";
 
   // =====================================
@@ -307,13 +312,21 @@ function switchTrend(type) {
   // =====================================
 
   if (type === "appointments") {
-    labels = dashboardCache.analytics.trend.map((r) => r.month);
 
-    values = dashboardCache.analytics.trend.map((r) => r.appointments);
+    labels =
+      dashboardCache.analytics.trend.map(
+        (r) => r.month
+      );
+
+    values =
+      dashboardCache.analytics.trend.map(
+        (r) => r.appointments
+      );
 
     label = "Appointments";
 
     chartType = "line";
+
   }
 
   // =====================================
@@ -321,13 +334,21 @@ function switchTrend(type) {
   // =====================================
 
   if (type === "revenue") {
-    labels = dashboardCache.analytics.revenueTrend.map((r) => r.month);
 
-    values = dashboardCache.analytics.revenueTrend.map((r) => r.revenue);
+    labels =
+      dashboardCache.analytics.revenueTrend.map(
+        (r) => r.month
+      );
+
+    values =
+      dashboardCache.analytics.revenueTrend.map(
+        (r) => r.revenue
+      );
 
     label = "Revenue";
 
     chartType = "line";
+
   }
 
   // =====================================
@@ -335,13 +356,21 @@ function switchTrend(type) {
   // =====================================
 
   if (type === "doctors") {
-    labels = dashboardCache.analytics.topDoctors.map((r) => r.doctor);
 
-    values = dashboardCache.analytics.topDoctors.map((r) => r.revenue);
+    labels =
+      dashboardCache.analytics.topDoctors.map(
+        (r) => r.doctor
+      );
+
+    values =
+      dashboardCache.analytics.topDoctors.map(
+        (r) => Number(r.revenue)
+      );
 
     label = "Doctor Revenue";
 
-    chartType = "bar";
+    chartType = "column";
+
   }
 
   // =====================================
@@ -349,95 +378,256 @@ function switchTrend(type) {
   // =====================================
 
   if (type === "hours") {
-    labels = dashboardCache.analytics.hourlyTraffic.map((r) => r.hour);
 
-    values = dashboardCache.analytics.hourlyTraffic.map((r) => r.appointments);
+    labels =
+      dashboardCache.analytics.hourlyTraffic.map(
+        (r) => r.hour
+      );
+
+    values =
+      dashboardCache.analytics.hourlyTraffic.map(
+        (r) => r.appointments
+      );
 
     label = "Peak Hours";
 
-    chartType = "bar";
+    chartType = "column";
+
   }
 
-  const canvas = document.getElementById("chart1");
+  // =====================================
+  // DESTROY OLD
+  // =====================================
 
-  if (!canvas) return;
+  if (
+    trendChartInstance &&
+    typeof trendChartInstance.destroy === "function"
+  ) {
 
-  const ctx = canvas.getContext("2d");
-
-  if (trendChartInstance) {
     trendChartInstance.destroy();
+
   }
 
-  trendChartInstance = new Chart(ctx, {
-    type: chartType,
+  // =====================================
+  // HIGHCHARTS RENDER
+  // =====================================
 
-    data: {
-      labels,
+  trendChartInstance =
+    Highcharts.chart("chart1", {
 
-      datasets: [
+      chart: {
+
+        type: chartType,
+
+        backgroundColor: "transparent",
+
+        height: 420,
+
+        spacingLeft: 20,
+
+        spacingRight: 20
+
+      },
+
+      title: {
+        text: null
+      },
+
+      credits: {
+        enabled: false
+      },
+
+      exporting: {
+        enabled: false
+      },
+
+      legend: {
+
+        enabled: true,
+
+        itemStyle: {
+          color: "#ffffff"
+        }
+
+      },
+
+      xAxis: {
+
+        categories: labels,
+
+        lineColor: "rgba(255,255,255,0.1)",
+
+        tickColor: "rgba(255,255,255,0.1)",
+
+        labels: {
+
+          style: {
+            color: "#cbd5e1",
+            fontSize: "11px"
+          },
+
+          rotation:
+            labels.length > 8
+              ? -35
+              : 0
+
+        }
+
+      },
+
+      yAxis: {
+
+        title: {
+          text: null
+        },
+
+        gridLineColor:
+          "rgba(255,255,255,0.08)",
+
+        labels: {
+
+          style: {
+            color: "#cbd5e1",
+            fontSize: "11px"
+          }
+
+        }
+
+      },
+
+      tooltip: {
+
+        backgroundColor: "#111827",
+
+        borderColor: "#6366f1",
+
+        style: {
+          color: "#ffffff"
+        }
+
+      },
+
+      plotOptions: {
+
+        line: {
+
+          marker: {
+            enabled: true
+          },
+
+          lineWidth: 3
+
+        },
+
+        column: {
+
+          borderRadius: 6
+
+        },
+
+        series: {
+
+          animation: {
+            duration: 800
+          }
+
+        }
+
+      },
+
+      series: [
+
         {
-          label,
+
+          name: label,
 
           data: values,
 
-          borderWidth: 2,
+          color: "#6366f1"
 
-          tension: 0.4,
+        }
 
-          fill: true,
+      ]
 
-          borderColor: "#6366f1",
+    });
 
-          backgroundColor: "rgba(99,102,241,0.2)",
-        },
-      ],
+}
+
+
+
+function renderStatusChart(data) {
+
+  Highcharts.chart("chart2", {
+
+    chart: {
+      type: "pie",
+      backgroundColor: "transparent"
     },
 
-    options: commonChartOptions(),
+    title: {
+      text: null
+    },
+
+    credits: {
+      enabled: false
+    },
+
+    tooltip: {
+
+      backgroundColor: "#111827",
+
+      style: {
+        color: "#ffffff"
+      }
+
+    },
+
+    plotOptions: {
+
+      pie: {
+
+        allowPointSelect: true,
+
+        cursor: "pointer",
+
+        dataLabels: {
+
+          enabled: true,
+
+          style: {
+            color: "#ffffff"
+          }
+
+        }
+
+      }
+
+    },
+
+    series: [
+
+      {
+
+        name: "Appointments",
+
+        data: data.map((r) => ({
+          name: r.status,
+          y: r.total
+        }))
+
+      }
+
+    ]
+
   });
+
 }
 
 // =====================================
 // STATUS CHART
 // =====================================
 
-function renderStatusChart(data) {
-  const canvas = document.getElementById("chart2");
 
-  if (!canvas) return;
-
-  const ctx = canvas.getContext("2d");
-
-  chartInstances.chart2 = new Chart(ctx, {
-    type: "pie",
-
-    data: {
-      labels: data.map((r) => r.status),
-
-      datasets: [
-        {
-          data: data.map((r) => r.total),
-        },
-      ],
-    },
-
-    options: {
-      responsive: true,
-
-      maintainAspectRatio: false,
-
-      plugins: {
-        legend: {
-          position: "bottom",
-
-          labels: {
-            color: "white",
-          },
-        },
-      },
-    },
-  });
-}
 
 // =====================================
 // DOCTOR CHART
@@ -448,69 +638,82 @@ function renderStatusChart(data) {
 // =====================================
 
 function renderDoctorChart(data) {
-  const canvas = document.getElementById("chart3");
 
-  if (!canvas) return;
+  Highcharts.chart("chart3", {
 
-  const ctx = canvas.getContext("2d");
-
-  chartInstances.chart3 = new Chart(ctx, {
-    type: "bar",
-
-    data: {
-      labels: data.map((r) => r.doctor),
-
-      datasets: [
-        {
-          label: "Revenue",
-
-          data: data.map((r) => Number(r.revenue)),
-
-          borderRadius: 8,
-
-          backgroundColor: "rgba(99,102,241,0.8)",
-        },
-      ],
+    chart: {
+      type: "column",
+      backgroundColor: "transparent"
     },
 
-    options: {
-      ...commonChartOptions(),
+    title: {
+      text: null
+    },
 
-      onClick: (
-        event,
+    credits: {
+      enabled: false
+    },
 
-        elements,
-      ) => {
-        if (!elements.length) return;
+    xAxis: {
 
-        const index = elements[0].index;
+      categories:
+        data.map((r) => r.doctor),
 
-        const doctorName = data[index].doctor;
+      labels: {
 
-        console.log("Doctor clicked:", doctorName);
-
-        // =====================
-        // UPDATE DROPDOWN
-        // =====================
-
-        const doctorFilter = document.getElementById("doctorFilter");
-
-        if (doctorFilter) {
-          doctorFilter.value = doctorName;
+        style: {
+          color: "#cbd5e1"
         }
 
-        // =====================
-        // RELOAD DASHBOARD
-        // =====================
+      }
 
-        loadAppointmentsDashboard(
-          document.getElementById("dateFilter")?.value,
-
-          doctorName,
-        );
-      },
     },
+
+    yAxis: {
+
+      title: {
+        text: null
+      },
+
+      labels: {
+
+        style: {
+          color: "#cbd5e1"
+        }
+
+      }
+
+    },
+
+    tooltip: {
+
+      backgroundColor: "#111827",
+
+      style: {
+        color: "#ffffff"
+      }
+
+    },
+
+    series: [
+
+      {
+
+        name: "Revenue",
+
+        data:
+          data.map((r) =>
+            Number(r.revenue)
+          ),
+
+        color: "#6366f1"
+
+      }
+
+    ]
+
   });
+
 }
 // =====================================
 // CITY CHART
@@ -521,37 +724,85 @@ function renderDoctorChart(data) {
 // =====================================
 
 function renderCityChart(data) {
-  const canvas = document.getElementById("chart4");
 
-  if (!canvas) return;
+  Highcharts.chart("chart4", {
 
-  const ctx = canvas.getContext("2d");
+    chart: {
 
-  chartInstances.chart4 = new Chart(ctx, {
-    type: "bar",
+      type: "bar",
 
-    data: {
-      labels: data.map((r) => r.city),
+      backgroundColor: "transparent"
 
-      datasets: [
-        {
-          label: "Appointments",
-
-          data: data.map((r) => r.appointments),
-
-          borderRadius: 8,
-
-          backgroundColor: "rgba(16,185,129,0.8)",
-        },
-      ],
     },
 
-    options: {
-      ...commonChartOptions(),
-
-      indexAxis: "y",
+    title: {
+      text: null
     },
+
+    credits: {
+      enabled: false
+    },
+
+    xAxis: {
+
+      categories:
+        data.map((r) => r.city),
+
+      labels: {
+
+        style: {
+          color: "#cbd5e1"
+        }
+
+      }
+
+    },
+
+    yAxis: {
+
+      title: {
+        text: null
+      },
+
+      labels: {
+
+        style: {
+          color: "#cbd5e1"
+        }
+
+      }
+
+    },
+
+    tooltip: {
+
+      backgroundColor: "#111827",
+
+      style: {
+        color: "#ffffff"
+      }
+
+    },
+
+    series: [
+
+      {
+
+        name: "Appointments",
+
+        data:
+          data.map(
+            (r) => r.appointments
+          ),
+
+        color: "#10b981"
+
+      }
+
+    ]
+
   });
+
 }
 
 // =====================================

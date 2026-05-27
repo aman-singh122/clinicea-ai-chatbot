@@ -6,323 +6,203 @@ import { fileURLToPath } from "url";
 // DUCKDB
 // =========================
 
-import validateSQL
-from "../sql/validateSQL.js";
+import validateSQL from "../sql/validateSQL.js";
 
-import executeDuckQuery
-from "../duckdb/executeDuckQuery.js";
+import smartVisualizationSelector from "../graphs/smartVisualizationSelector.js";
 
-import businessRules
-from "../semantic/businessRules.js";
+import executeDuckQuery from "../duckdb/executeDuckQuery.js";
+
+import businessRules from "../semantic/businessRules.js";
 
 // =========================
 // AI + ANALYTICS
 // =========================
 
-import repairSQLQuery
-from "../sql/repairSQLQuery.js";
+import repairSQLQuery from "../sql/repairSQLQuery.js";
 
-import sqlQueryGenerator
-from "../sql/sqlQueryGenerator.js";
+import sqlQueryGenerator from "../sql/sqlQueryGenerator.js";
 
-import graphDecisionEngine
-from "../graphs/graphDecisionEngine.js";
+import graphDecisionEngine from "../graphs/graphDecisionEngine.js";
 
-import graphGenerator
-from "../graphs/graphGenerator.js";
+import graphGenerator from "../graphs/graphGenerator.js";
 
-import sqlAnswerBuilder
-from "../sql/sqlAnswerBuilder.js";
+import sqlAnswerBuilder from "../sql/sqlAnswerBuilder.js";
 
 // =========================
 // DYNAMIC DATASETS
 // =========================
 
-import getAllDatasets
-from "../utils/getAllDatasets.js";
+import getAllDatasets from "../utils/getAllDatasets.js";
 
-import getDatasetSchemas
-from "../utils/getDatasetSchemas.js";
+import getDatasetSchemas from "../utils/getDatasetSchemas.js";
 
-import selectDataset
-from "../sql/selectDataset.js";
+import selectDataset from "../sql/selectDataset.js";
 
 // =========================
 
-const __filename =
-  fileURLToPath(import.meta.url);
+const __filename = fileURLToPath(import.meta.url);
 
-const __dirname =
-  path.dirname(__filename);
+const __dirname = path.dirname(__filename);
 
 // =========================
 
-async function sqlController(
-  req,
-  res
-) {
-
+async function sqlController(req, res) {
   try {
-
-    const {
-      query,
-      user
-    } = req.body;
+    const { query, user } = req.body;
 
     // =========================
     // GET ALL DATASETS
     // =========================
 
-    const datasets =
+    const datasets = getAllDatasets(user);
 
-      getAllDatasets(user);
-
-    console.log(
-      "\nALL DATASETS:\n",
-      datasets
-    );
+    console.log("\nALL DATASETS:\n", datasets);
 
     // =========================
     // EMPTY CHECK
     // =========================
 
-    if (
-      datasets.length === 0
-    ) {
-
+    if (datasets.length === 0) {
       return res.status(400).json({
-
         success: false,
 
-        answer:
-          "No datasets uploaded."
-
+        answer: "No datasets uploaded.",
       });
-
     }
 
     // =========================
     // GET ALL SCHEMAS
     // =========================
 
-    const schemaMap =
+    const schemaMap = await getDatasetSchemas(datasets);
 
-      await getDatasetSchemas(
-        datasets
-      );
-
-    console.log(
-      "\nSCHEMA MAP:\n",
-      schemaMap
-    );
+    console.log("\nSCHEMA MAP:\n", schemaMap);
 
     // =========================
     // AI DATASET SELECTION
     // =========================
 
-    const selectedDataset =
+    const selectedDataset = await selectDataset({
+      query,
 
-      await selectDataset({
+      datasets,
 
-        query,
+      schemaMap,
+    });
 
-        datasets,
-
-        schemaMap
-
-      });
-
-    console.log(
-      "\nSELECTED DATASET:\n",
-      selectedDataset
-    );
+    console.log("\nSELECTED DATASET:\n", selectedDataset);
 
     // =========================
     // FIND DATASET
     // =========================
 
-    const matchedDataset =
-
-      datasets.find(
-
-        dataset =>
-
-          dataset.dataset
-            .toLowerCase()
-
-          ===
-
-          selectedDataset
-            .toLowerCase()
-
-      );
+    const matchedDataset = datasets.find(
+      (dataset) =>
+        dataset.dataset.toLowerCase() === selectedDataset.toLowerCase(),
+    );
 
     // =========================
     // CHECK
     // =========================
 
     if (!matchedDataset) {
-
       return res.status(400).json({
-
         success: false,
 
-        answer:
-          "Dataset selection failed."
-
+        answer: "Dataset selection failed.",
       });
-
     }
 
     // =========================
     // PARQUET PATH
     // =========================
 
-    const parquetPath =
+    const parquetPath = matchedDataset.fullPath;
 
-      matchedDataset.fullPath;
-
-    console.log(
-      "\nPARQUET PATH:\n",
-      parquetPath
-    );
+    console.log("\nPARQUET PATH:\n", parquetPath);
 
     // =========================
     // CURRENT SCHEMA
     // =========================
 
-    const schemaInfo =
+    const schemaInfo = schemaMap[matchedDataset.dataset];
 
-      schemaMap[
-        matchedDataset.dataset
-      ];
-
-    console.log(
-      "\nSCHEMA INFO:\n",
-      schemaInfo
-    );
+    console.log("\nSCHEMA INFO:\n", schemaInfo);
 
     // =========================
     // AI SQL GENERATION
     // =========================
 
-    const sql =
+    const sql = await sqlQueryGenerator(
+      query,
 
-await sqlQueryGenerator(
+      schemaInfo,
 
-  query,
-
-  schemaInfo,
-
-  businessRules[
-    matchedDataset.dataset
-  ] || {}
-
-);
-
-    console.log(
-      "\nAI SQL:\n",
-      sql
+      businessRules[matchedDataset.dataset] || {},
     );
+
+    console.log("\nAI SQL:\n", sql);
 
     // =========================
     // REPLACE TABLE
     // =========================
 
-    const finalSql =
+    const finalSql = sql.replace(
+      /FROM\s+records/gi,
 
-      sql.replace(
-
-        /FROM\s+records/gi,
-
-        `FROM read_parquet('${parquetPath.replace(/\\/g, "/")}')`
-
-      );
+      `FROM read_parquet('${parquetPath.replace(/\\/g, "/")}')`,
+    );
 
     // =========================
     // VALIDATE SQL
     // =========================
 
-    const safeSQL =
-      validateSQL(finalSql);
+    const safeSQL = validateSQL(finalSql);
 
-    console.log(
-      "\nSAFE FINAL SQL:\n",
-      safeSQL
-    );
+    console.log("\nSAFE FINAL SQL:\n", safeSQL);
 
     let rawResult;
 
     try {
-
       // =========================
       // FIRST EXECUTION
       // =========================
 
-      rawResult =
-
-        await executeDuckQuery(
-          safeSQL
-        );
-
+      rawResult = await executeDuckQuery(safeSQL);
     } catch (sqlError) {
+      console.log("\nINITIAL SQL FAILED:\n");
 
-      console.log(
-        "\nINITIAL SQL FAILED:\n"
-      );
-
-      console.log(
-        sqlError.message
-      );
+      console.log(sqlError.message);
 
       // =========================
       // REPAIR SQL
       // =========================
 
-      const repairedSQL =
+      const repairedSQL = await repairSQLQuery(
+        query,
 
-        await repairSQLQuery(
+        safeSQL,
 
-          query,
+        sqlError.message,
 
-          safeSQL,
-
-          sqlError.message,
-
-          schemaInfo
-
-        );
-
-      console.log(
-        "\nREPAIRED SQL:\n",
-        repairedSQL
+        schemaInfo,
       );
+
+      console.log("\nREPAIRED SQL:\n", repairedSQL);
 
       // =========================
       // VALIDATE AGAIN
       // =========================
 
-      const validatedRepairSQL =
+      const validatedRepairSQL = validateSQL(repairedSQL);
 
-        validateSQL(
-          repairedSQL
-        );
-
-      console.log(
-        "\nVALIDATED REPAIRED SQL:\n",
-        validatedRepairSQL
-      );
+      console.log("\nVALIDATED REPAIRED SQL:\n", validatedRepairSQL);
 
       // =========================
       // RETRY EXECUTION
       // =========================
 
-      rawResult =
-
-        await executeDuckQuery(
-          validatedRepairSQL
-        );
-
+      rawResult = await executeDuckQuery(validatedRepairSQL);
     }
 
     // =========================
@@ -330,107 +210,74 @@ await sqlQueryGenerator(
     // =========================
 
     const result = JSON.parse(
-
       JSON.stringify(
-
         rawResult,
 
-        (key, value) =>
-
-          typeof value === "bigint"
-
-            ? Number(value)
-
-            : value
-
-      )
-
+        (key, value) => (typeof value === "bigint" ? Number(value) : value),
+      ),
     );
 
-    console.log(
-      "\nREAL RESULT:\n",
-      result
-    );
+    console.log("\nREAL RESULT:\n", result);
 
     // =========================
     // EMPTY RESULT
     // =========================
 
-    if (
-      !result ||
-      result.length === 0
-    ) {
-
+    if (!result || result.length === 0) {
       return res.json({
-
         success: true,
 
         type: "analytics",
 
-        answer:
-          "No matching records found.",
+        answer: "No matching records found.",
 
         result: [],
-
       });
-
     }
 
     // =========================
     // GRAPH ENGINE
     // =========================
 
-    const graphConfig =
+    const visualization = smartVisualizationSelector(
+      query,
 
-      graphDecisionEngine(
+      result,
+    );
 
-        query,
+    console.log("\nSMART VISUALIZATION:\n", visualization);
 
-        result
+    const graphConfig = graphDecisionEngine(
+      query,
 
-      );
+      result,
+    );
 
     let graphData = null;
 
-    if (
-      graphConfig.graph
-    ) {
-
-      graphData =
-        graphGenerator(result);
-
+    if (graphConfig.graph) {
+      graphData = graphGenerator(result);
     }
 
-    console.log(
-      "\nGRAPH CONFIG:\n",
-      graphConfig
-    );
+    console.log("\nGRAPH CONFIG:\n", graphConfig);
 
-    console.log(
-      "\nGRAPH DATA:\n",
-      graphData
-    );
+    console.log("\nGRAPH DATA:\n", graphData);
 
     // =========================
     // NATURAL LANGUAGE ANSWER
     // =========================
 
-    const answer =
+    const answer = await sqlAnswerBuilder(
+      query,
 
-      await sqlAnswerBuilder(
-
-        query,
-
-        result
-
-      );
+      result,
+    );
 
     // =========================
     // RESPONSE
     // =========================
 
     res.json({
-
       success: true,
 
       type: "analytics",
@@ -443,46 +290,32 @@ await sqlQueryGenerator(
 
       answer,
 
-      graphConfig,
+      
+      visualization,
 
       graphData,
 
-      data: result.map(
-        (item) => ({
+      graphConfig,
 
-          label:
-            Object.values(item)[0],
+      data: result.map((item) => ({
+        label: Object.values(item)[0],
 
-          value:
-            Object.values(item)[1],
-
-        })
-      ),
-
+        value: Object.values(item)[1],
+      })),
     });
-
   } catch (error) {
-
-    console.log(
-      "\nSQL CONTROLLER ERROR:\n"
-    );
+    console.log("\nSQL CONTROLLER ERROR:\n");
 
     console.log(error);
 
     res.status(500).json({
-
       success: false,
 
-      answer:
-        "Analytics generation failed.",
+      answer: "Analytics generation failed.",
 
-      error:
-        error.message,
-
+      error: error.message,
     });
-
   }
-
 }
 
 export default sqlController;

@@ -1,9 +1,52 @@
-import ai from "../../../../config/gemini.js";
+import createGeminiClient
+from "../../../../config/gemini.js";
+
+import getUserGemini
+from "../../../utils/getUserGemini.js";
+
+
 async function sqlQueryGenerator(
+
+  
   query,
   schemaInfo,
   semanticInfo
 ) {
+
+
+const apiKey =
+  getUserGemini("user1");
+
+// =========================
+// API KEY CHECK
+// =========================
+
+if (!apiKey) {
+
+  throw new Error(
+    "No Gemini API Key Found"
+  );
+
+}
+
+// =========================
+// CREATE AI CLIENT
+// =========================
+
+const ai =
+  createGeminiClient(apiKey);
+
+// =========================
+// DEBUG
+// =========================
+
+console.log(
+  "\nAPI KEY FOUND"
+);
+
+console.log(
+  "\nAI CLIENT CREATED"
+);
 
   // =========================
   // FORMAT COLUMNS + TYPES
@@ -87,6 +130,80 @@ strftime("ApptStartDtm", '%w')
 strftime("ApptStartDtm", '%Y-%m')
 
 strftime("Bill Date", '%Y')
+
+
+
+================================================
+TIME ANALYTICS RULES
+================================================
+
+IMPORTANT:
+
+For appointment hour analysis,
+busy hour analysis,
+peak time analysis,
+hourly trends,
+appointment timing analysis:
+
+ALWAYS use:
+
+"Appt Start Time"
+
+NOT:
+
+"ApptStartDtm"
+
+------------------------------------------------
+
+Correct Example:
+
+strftime(
+
+  try_strptime(
+
+    "Appt Start Time",
+
+    '%I:%M %p'
+
+  ),
+
+  '%H'
+
+)
+
+------------------------------------------------
+
+Examples:
+
+busiest appointment hour
+
+SELECT
+
+  strftime(
+
+    try_strptime(
+
+      "Appt Start Time",
+
+      '%I:%M %p'
+
+    ),
+
+    '%H'
+
+  ) as appointment_hour,
+
+  COUNT(*) as total_appointments
+
+FROM records
+
+GROUP BY appointment_hour
+
+ORDER BY total_appointments DESC
+
+LIMIT 1
+
+================================================
 
 ================================================
 SMART NUMERIC RULES
@@ -396,14 +513,49 @@ ${query}
   // GEMINI
   // =========================
 
-  const response =
-    await ai.models.generateContent({
+ let response;
 
-      model: "gemini-2.5-flash",
+let retries = 5;
 
-      contents: prompt,
+while (retries > 0) {
 
-    });
+  try {
+
+    response =
+      await ai.models.generateContent({
+
+        model: "gemini-2.5-flash",
+
+        contents: prompt
+
+      });
+
+    break;
+
+  } catch (error) {
+
+    retries--;
+
+    console.log(
+      "\nGEMINI SQL RETRY..."
+    );
+
+    // wait 2 sec
+
+    await new Promise(
+      resolve =>
+        setTimeout(resolve, 2000)
+    );
+
+    if (retries === 0) {
+
+      throw error;
+
+    }
+
+  }
+
+}
 
   // =========================
   // CLEAN SQL

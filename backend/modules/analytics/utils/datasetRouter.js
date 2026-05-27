@@ -1,10 +1,30 @@
 function datasetRouter(query) {
 
   // =========================
+  // VALIDATION
+  // =========================
+
+  if (
+
+    !query ||
+
+    typeof query !== "string"
+
+  ) {
+
+    return "AI_FALLBACK";
+
+  }
+
+  // =========================
   // CLEAN QUERY
   // =========================
 
-  const q = query.toLowerCase().trim();
+  const q =
+
+    query
+      .toLowerCase()
+      .trim();
 
   // =========================
   // SCORE SYSTEM
@@ -22,7 +42,6 @@ function datasetRouter(query) {
 
   const appointmentKeywords = [
 
-    // Core
     "appointment",
     "appointments",
     "appt",
@@ -30,48 +49,40 @@ function datasetRouter(query) {
     "bookings",
     "visit",
     "visits",
-    "doctor visit",
-    "patient visit",
 
-    // Status
+    "doctor",
+    "doctors",
+    "physician",
+    "clinician",
+
+    "patient",
+    "patients",
+
     "check out",
     "checkout",
-    "checked out",
     "cancelled",
     "scheduled",
     "waiting",
     "confirmed",
     "no show",
 
-    // Time
     "consultation",
     "consultation duration",
     "waiting duration",
     "appointment duration",
 
-    // Doctors
-    "doctor",
-    "physician",
-    "clinician",
-
-    // Analytics
     "busiest doctor",
     "busiest day",
-    "weekday",
-    "appointments by",
     "appointment trend",
+    "appointment status",
 
-    // Feedback
     "feedback",
-    "feedback score",
-
-    // Source
-    "appointment source",
-
-    // Patient flow
     "queue",
     "walkin",
-    "walk-in"
+
+    "city",
+    "appointment city"
+
   ];
 
   // =========================
@@ -80,49 +91,35 @@ function datasetRouter(query) {
 
   const billKeywords = [
 
-    // Core
     "bill",
     "billing",
     "invoice",
     "payment",
     "receipt",
 
-    // Revenue
     "revenue",
     "earnings",
     "income",
     "sales",
     "money",
 
-    // Finance
     "tax",
     "paid",
     "unpaid",
     "due",
     "profit",
     "loss",
-    "amount",
 
-    // Bill status
-    "bill status",
-    "payment status",
-
-    // Financial analytics
     "financial",
     "financials",
 
-    // Patient billing
     "bill amount",
     "paid amount",
     "total billed",
 
-    // Trends
     "revenue trend",
-    "billing trend",
+    "revenue growth"
 
-    // Comparisons
-    "highest revenue",
-    "lowest revenue"
   ];
 
   // =========================
@@ -131,57 +128,43 @@ function datasetRouter(query) {
 
   const itemKeywords = [
 
-    // Core
     "item",
     "items",
     "product",
     "products",
-    "inventory",
 
-    // Medicine
     "medicine",
     "medicines",
     "drug",
-    "drugs",
     "tablet",
-    "tablets",
     "capsule",
-    "capsules",
 
-    // Quantity
     "qty",
     "quantity",
     "sold",
-    "most sold",
+
     "top selling",
     "best selling",
+    "most sold",
 
-    // Pricing
-    "sell price",
-    "buy price",
+    "inventory",
+    "stock",
 
-    // Services
     "service",
     "services",
-    "service category",
 
-    // Pharmacy
-    "pharmacy",
+    "pharmacy"
 
-    // Analytics
-    "top items",
-    "item revenue",
-    "revenue by item",
-
-    // Inventory
-    "stock"
   ];
 
   // =========================
-  // SCORING FUNCTION
+  // SCORE FUNCTION
   // =========================
 
-  function calculateScore(keywords, datasetName) {
+  function calculateScore(
+    keywords,
+    datasetName
+  ) {
 
     let score = 0;
 
@@ -189,14 +172,21 @@ function datasetRouter(query) {
 
       if (q.includes(word)) {
 
-        // LONGER PHRASES
-        // GET HIGHER SCORE
+        // =====================
+        // LONG PHRASES
+        // =====================
 
         if (word.includes(" ")) {
 
           score += 3;
 
-        } else {
+        }
+
+        // =====================
+        // NORMAL WORDS
+        // =====================
+
+        else {
 
           score += 1;
 
@@ -206,96 +196,118 @@ function datasetRouter(query) {
 
     }
 
-    console.log(`${datasetName} SCORE:`, score);
+    console.log(
+      `${datasetName} SCORE:`,
+      score
+    );
 
     return score;
+
   }
 
   // =========================
-  // CALCULATE SCORES
+  // BASE SCORES
   // =========================
 
   appointmentScore =
+
     calculateScore(
       appointmentKeywords,
       "Appointments"
     );
 
   billsScore =
+
     calculateScore(
       billKeywords,
       "Bills"
     );
 
   billItemsScore =
+
     calculateScore(
       itemKeywords,
       "BillItems"
     );
 
   // =========================
-  // PRIORITY RULES
-  // =========================
-
-  // VERY STRONG ITEM INTENT
-
-  const strongItemPatterns = [
-
-    "top selling",
-    "most sold",
-    "best selling",
-    "medicine",
-    "medicines",
-    "drug",
-    "tablet",
-    "capsule",
-    "inventory",
-    "qty"
-  ];
-
-  for (const pattern of strongItemPatterns) {
-
-    if (q.includes(pattern)) {
-
-      console.log(
-        "STRONG MATCH: BillItems"
-      );
-
-      return "BillItems";
-    }
-
-  }
-
-  // =========================
-  // VERY STRONG BILL INTENT
+  // STRONG BILL BOOSTS
   // =========================
 
   const strongBillPatterns = [
 
     "revenue",
-    "invoice",
     "billing",
+    "invoice",
+    "financial",
     "payment",
-    "tax",
     "profit",
-    "financial"
+    "income"
+
   ];
 
   for (const pattern of strongBillPatterns) {
 
     if (q.includes(pattern)) {
 
-      console.log(
-        "STRONG MATCH: Bills"
-      );
+      billsScore += 5;
 
-      return "Bills";
     }
 
   }
 
   // =========================
-  // SCORE COMPARISON
+  // STRONG ITEM BOOSTS
+  // =========================
+
+  const strongItemPatterns = [
+
+    "top selling",
+    "medicine",
+    "inventory",
+    "qty",
+    "stock",
+    "pharmacy"
+
+  ];
+
+  for (const pattern of strongItemPatterns) {
+
+    if (q.includes(pattern)) {
+
+      billItemsScore += 5;
+
+    }
+
+  }
+
+  // =========================
+  // APPOINTMENT BOOSTS
+  // =========================
+
+  const strongAppointmentPatterns = [
+
+    "doctor",
+    "appointment",
+    "patient",
+    "consultation",
+    "waiting",
+    "status"
+
+  ];
+
+  for (const pattern of strongAppointmentPatterns) {
+
+    if (q.includes(pattern)) {
+
+      appointmentScore += 2;
+
+    }
+
+  }
+
+  // =========================
+  // SCORE OBJECTS
   // =========================
 
   const scores = [
@@ -318,32 +330,58 @@ function datasetRouter(query) {
   ];
 
   // =========================
-  // SORT DESCENDING
+  // SORT DESC
   // =========================
 
   scores.sort(
     (a, b) => b.score - a.score
   );
 
-  console.log("\nDATASET SCORES:");
+  console.log(
+    "\nDATASET SCORES:"
+  );
 
   console.log(scores);
 
   // =========================
-  // IF ALL ZERO
+  // LOW CONFIDENCE
   // =========================
 
-  if (scores[0].score === 0) {
+  if (
+
+    scores[0].score <= 2
+
+  ) {
 
     console.log(
-      "\nNO MATCH FOUND → DEFAULT Appointments"
+      "\nLOW CONFIDENCE → USE AI"
     );
 
-    return "Appointments";
+    return "AI_FALLBACK";
+
   }
 
   // =========================
-  // FINAL WINNER
+  // TIE DETECTION
+  // =========================
+
+  if (
+
+    scores[0].score ===
+    scores[1].score
+
+  ) {
+
+    console.log(
+      "\nTIE DETECTED → USE AI"
+    );
+
+    return "AI_FALLBACK";
+
+  }
+
+  // =========================
+  // FINAL DATASET
   // =========================
 
   console.log(
@@ -351,6 +389,7 @@ function datasetRouter(query) {
   );
 
   return scores[0].dataset;
+
 }
 
 export default datasetRouter;

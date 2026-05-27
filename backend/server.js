@@ -3,12 +3,17 @@ import express from "express";
 import cors from "cors";
 import fs from "fs";
 import multer from "multer";
-import { GoogleGenAI } from "@google/genai";
+import createGeminiClient
+from "../config/gemini.js";
+
+import getUserGemini
+from "./utils/getUserGemini.js";
+
 import path from "path";
 import { fileURLToPath } from "url";
 import { createRequire } from "module";
-import dashboardRoutes
-from "./modules/analytics/dashboard/dashboardRoutes.js";
+import dashboardRoutes from "./modules/analytics/dashboard/dashboardRoutes.js";
+import { encrypt, decrypt } from "./utils/encryption.js";
 // import analyticsRoutes from "./routes/analyticsRoutes.js";
 // import csvRoutes from "../csvAI/csvRoutes.js";
 
@@ -16,12 +21,9 @@ import detectIntent from "./utils/detectIntent.js";
 
 // import sqlRoutes from "../csvSQLAI/sqlRoutes.js";
 
-import sqlRoutes
-from "./modules/analytics/routes/sqlRoutes.js";
+import sqlRoutes from "./modules/analytics/routes/sqlRoutes.js";
 
-import uploadAnalyticsRoutes
-from "./modules/analytics/routes/uploadAnalyticsRoutes.js";
-
+import uploadAnalyticsRoutes from "./modules/analytics/routes/uploadAnalyticsRoutes.js";
 
 // ================= DIR SETUP =================
 const __filename = fileURLToPath(import.meta.url);
@@ -53,15 +55,9 @@ app.use(express.json());
 
 app.use("/api", sqlRoutes);
 
-app.use(
-  "/api",
-  uploadAnalyticsRoutes
-);
+app.use("/api", uploadAnalyticsRoutes);
 
-app.use(
-  "/api",
-  dashboardRoutes
-);
+app.use("/api", dashboardRoutes);
 
 //video function
 
@@ -122,7 +118,6 @@ const storage = multer.diskStorage({
     }
 
     cb(null, dir);
-
   },
   filename: function (req, file, cb) {
     cb(null, Date.now() + "-" + file.originalname);
@@ -182,7 +177,7 @@ app.post("/save-api-key", (req, res) => {
       }
     }
 
-    apiKeys[user] = apiKey;
+    apiKeys[user] = encrypt(apiKey);
 
     fs.writeFileSync(apiKeysPath, JSON.stringify(apiKeys, null, 2));
 
@@ -246,7 +241,6 @@ function generateBill(user, patient, fileNo, extractedText) {
 
 // ================= CHAT =================
 app.post("/chat", async (req, res) => {
-  
   try {
     const { user, query } = req.body;
 
@@ -266,14 +260,13 @@ app.post("/chat", async (req, res) => {
       }
     }
 
-
     // current user patients
     const userPatientsObj = patientsData.find((p) => p.user === user);
     const userPatients = userPatientsObj ? userPatientsObj.patients : [];
 
     // ===== API KEY =====
-    const apiKeys = JSON.parse(fs.readFileSync(apiKeysPath));
-    const apiKey = apiKeys[user];
+  const apiKey =
+  getUserGemini(user);
 
     if (!apiKey) {
       return res.json({ answer: "Please add API key in settings." });
@@ -432,11 +425,10 @@ Please provide patientId or file number.`,
     if (!userDocs && !cliniceaData) {
       return res.json({ answer: "No data available." });
     }
-    
-    
-    
+
     // ================= GEMINI =================
-    const ai = new GoogleGenAI({ apiKey });
+   const ai =
+  createGeminiClient(apiKey); 
 
     const chat = ai.chats.create({
       model: "gemini-2.5-flash",
@@ -522,33 +514,25 @@ QUESTION:
 ${question}
 `;
 
-// ================= VIDEO PRIORITY RESPONSE =================
+    // ================= VIDEO PRIORITY RESPONSE =================
 
-if (matchedVideo) {
+    if (matchedVideo) {
+      return res.json({
+        type: "video",
 
-  return res.json({
+        answer: "Watch the tutorial video below to get your answer.",
 
-    type: "video",
+        video: {
+          title: matchedVideo.title,
 
-    answer:
-      "Watch the tutorial video below to get your answer.",
+          url: matchedVideo.url,
 
-    video: {
+          thumbnail: matchedVideo.thumbnail,
 
-      title:
-        matchedVideo.title,
-
-      url:
-        matchedVideo.url,
-
-      thumbnail:
-        matchedVideo.thumbnail,
-
-      description:
-        matchedVideo.description,
+          description: matchedVideo.description,
+        },
+      });
     }
-  });
-}
     const response = await chat.sendMessage({
       message: prompt,
     });

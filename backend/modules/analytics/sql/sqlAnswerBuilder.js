@@ -1,18 +1,87 @@
-import ai from "../../../../config/gemini.js";
+import createGeminiClient
+from "../../../../config/gemini.js";
 
-async function sqlAnswerBuilder(query, result) {
+import getUserGemini
+from "../../../utils/getUserGemini.js";
+
+// =========================
+// SQL ANSWER BUILDER
+// =========================
+
+async function sqlAnswerBuilder(
+
+  query,
+  result
+
+) {
 
   // =========================
-  // EMPTY RESULT HANDLING
+  // EMPTY RESULT
   // =========================
 
   if (
+
     !result ||
+
     result.length === 0
+
   ) {
 
     return "No matching records were found.";
+
   }
+
+  // =========================
+  // USER GEMINI API
+  // =========================
+
+  const apiKey =
+    getUserGemini("user1");
+
+  if (!apiKey) {
+
+    throw new Error(
+      "No Gemini API Key Found"
+    );
+
+  }
+
+  // =========================
+  // CREATE AI CLIENT
+  // =========================
+
+  const ai =
+    createGeminiClient(apiKey);
+
+  console.log(
+    "\nANSWER BUILDER AI READY"
+  );
+
+  // =========================
+  // NORMALIZE BIGINT
+  // =========================
+
+  const normalizedResult =
+    JSON.stringify(
+
+      result,
+
+      (key, value) =>
+
+        typeof value === "bigint"
+          ? Number(value)
+          : value,
+
+      2
+
+    );
+
+  // =========================
+  // DETECT RESULT TYPE
+  // =========================
+
+  const isMultiRow =
+    result.length > 1;
 
   // =========================
   // PROMPT
@@ -20,63 +89,118 @@ async function sqlAnswerBuilder(query, result) {
 
   const prompt = `
 
-You are a professional healthcare analytics AI assistant.
+You are an enterprise-grade healthcare analytics AI assistant.
 
-Your job is to explain SQL results
-in a clean, short, human-friendly way.
+Your role:
+analyze SQL query results and generate
+clear business insights.
 
 ================================================
-STRICT RULES
+CORE OBJECTIVE
 ================================================
 
-Return ONLY clean plain text.
+Generate analytics-style insights,
+not robotic summaries.
+
+Your answers should sound like:
+
+- Power BI insights
+- Tableau summaries
+- Executive dashboard commentary
+- Business intelligence reporting
+
+================================================
+IMPORTANT RULES
+================================================
+
+- ONLY use values from SQL RESULT
+- NEVER hallucinate data
+- NEVER invent statistics
+- NEVER create fake trends
+
+================================================
+RESPONSE STYLE
+================================================
+
+Keep responses:
+
+- concise
+- professional
+- insight-driven
+- executive-friendly
+- human-readable
+
+================================================
+STRICT OUTPUT RULES
+================================================
+
+Return ONLY plain text.
 
 DO NOT use:
 
 - markdown
-- **
-- bullet stars
-- quotes
+- headings
+- bullet points
+- numbering
 - JSON
 - code blocks
-- headings
-- numbering
+- quotes
+- emojis
 
-Keep answers:
+================================================
+INSIGHT RULES
+================================================
 
-- short
-- professional
-- natural
-- business style
+If result contains:
+
+1 row:
+- summarize the key finding
+
+Multiple rows:
+- mention top performer
+- mention comparison/trend
+- mention important observations
+
+Revenue data:
+- mention highest revenue contributor
+
+Trend data:
+- mention increase/decrease patterns
+
+Category data:
+- mention dominant category
+
+Doctor analytics:
+- mention top-performing doctor
+
+Appointment analytics:
+- mention highest appointment volume
 
 ================================================
 GOOD EXAMPLES
 ================================================
 
 Question:
-total revenue
+monthly revenue trend
 
 Answer:
-The total revenue generated was 1,295,038.
+Revenue peaked in April 2026 with 1.2M in collections, while May 2026 showed a significant decline.
 
 ------------------------------------------------
 
 Question:
-top selling item
+top doctors by appointments
 
 Answer:
-The highest revenue-generating item was
-[W] - Pick Up and Drop Off
-with total revenue of 1,125,297.9.
+Dr. Sikhar handled the highest number of appointments with 71 visits, followed by Admin with 64 appointments.
 
 ------------------------------------------------
 
 Question:
-appointment status summary
+top selling services
 
 Answer:
-Scheduled appointments were the highest
-with 117 records.
+Pick Up and Drop Off service generated the highest revenue at 1.12M, significantly outperforming all other services.
 
 ================================================
 USER QUESTION
@@ -88,19 +212,13 @@ ${query}
 SQL RESULT
 ================================================
 
-${JSON.stringify(
+${normalizedResult}
 
-  result,
+================================================
+FINAL INSTRUCTION
+================================================
 
-  (key, value) =>
-
-    typeof value === "bigint"
-      ? Number(value)
-      : value,
-
-  2
-
-)}
+Generate a clean analytics insight.
 
 `;
 
@@ -114,14 +232,26 @@ ${JSON.stringify(
       model: "gemini-2.5-flash",
 
       contents: prompt
+
     });
+
+  // =========================
+  // SAFE RESPONSE EXTRACTION
+  // =========================
+
+  let answer =
+
+    response.text ||
+
+    response.candidates?.[0]
+      ?.content?.parts?.[0]
+      ?.text ||
+
+    "Analytics generated successfully.";
 
   // =========================
   // CLEAN RESPONSE
   // =========================
-
-  let answer =
-    response.text;
 
   answer = answer
 
@@ -134,15 +264,27 @@ ${JSON.stringify(
     // REMOVE QUOTES
     .replace(/"/g, "")
 
-    // REMOVE EXTRA LINES
+    // REMOVE EXTRA NEWLINES
     .replace(/\n{3,}/g, "\n\n")
 
-    // CLEAN SPACES
+    // NORMALIZE SPACES
     .replace(/\s+/g, " ")
 
+    // REMOVE LEADING/TRAILING
     .trim();
 
+  // =========================
+  // SAFETY FALLBACK
+  // =========================
+
+  if (!answer) {
+
+    return "Analytics generated successfully.";
+
+  }
+
   return answer;
+
 }
 
 export default sqlAnswerBuilder;

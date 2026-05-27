@@ -1,16 +1,20 @@
-import dotenv from "dotenv";
-
-dotenv.config();
-
 import { GoogleGenAI }
 from "@google/genai";
 
-const ai =
-  new GoogleGenAI({
+// =========================
+// CREATE GEMINI CLIENT
+// =========================
 
-    apiKey:
-      process.env.GEMINI_API_KEY
+function createGeminiClient(
+  apiKey
+) {
+
+  return new GoogleGenAI({
+
+    apiKey
 
   });
 
-export default ai;
+}
+
+export default createGeminiClient;
