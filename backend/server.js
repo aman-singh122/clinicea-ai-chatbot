@@ -3,11 +3,9 @@ import express from "express";
 import cors from "cors";
 import fs from "fs";
 import multer from "multer";
-import createGeminiClient
-from "../config/gemini.js";
+import createGeminiClient from "../config/gemini.js";
 
-import getUserGemini
-from "./utils/getUserGemini.js";
+import getUserGemini from "./utils/getUserGemini.js";
 
 import path from "path";
 import { fileURLToPath } from "url";
@@ -45,6 +43,7 @@ const videosPath = path.join(__dirname, "../data/videos.json");
 const uploadsPath = path.join(__dirname, "../uploads");
 
 const app = express();
+app.use(express.static("frontend"));
 app.use("/graphs", express.static("backend/graphs"));
 app.use("/uploads", express.static(uploadsPath));
 
@@ -61,7 +60,7 @@ app.use("/api", dashboardRoutes);
 
 //video function
 
-function findRelevantVideo(question, videos) {
+function findRelevantVideo(question, videos, intent) {
   const q = question.toLowerCase();
 
   let bestVideo = null;
@@ -91,7 +90,10 @@ function findRelevantVideo(question, videos) {
       const words = k.split(" ");
 
       for (const word of words) {
+        if (word.length < 4) continue;
+
         if (q.includes(word)) {
+          
           score += 1;
         }
       }
@@ -103,7 +105,11 @@ function findRelevantVideo(question, videos) {
     }
   }
 
+if (intent.clinicea || intent.video) {
   return bestScore >= 3 ? bestVideo : null;
+}
+
+return bestScore >= 8 ? bestVideo : null;
 }
 
 // ================= MULTER =================
@@ -134,6 +140,23 @@ app.post("/upload", upload.single("file"), async (req, res) => {
 
     const buffer = fs.readFileSync(filePath);
     const data = await pdfParse(buffer);
+
+    console.log("=================================");
+    console.log("FILE:", req.file.originalname);
+    console.log("PAGES:", data.numpages);
+    console.log("TEXT LENGTH:", data.text.length);
+    console.log("TEXT SAMPLE:");
+    console.log(data.text.substring(0, 500));
+    console.log("=================================");
+
+    if (!data.text || data.text.trim().length < 50) {
+      fs.unlinkSync(filePath); // uploaded pdf delete
+
+      return res.status(400).json({
+        error:
+          "Scanned/Image PDF is not supported. Please upload a text-searchable PDF.",
+      });
+    }
 
     let docs = [];
 
@@ -265,8 +288,7 @@ app.post("/chat", async (req, res) => {
     const userPatients = userPatientsObj ? userPatientsObj.patients : [];
 
     // ===== API KEY =====
-  const apiKey =
-  getUserGemini(user);
+    const apiKey = getUserGemini(user);
 
     if (!apiKey) {
       return res.json({ answer: "Please add API key in settings." });
@@ -310,7 +332,8 @@ app.post("/chat", async (req, res) => {
 
     const lowerQ = question.toLowerCase();
 
-    const matchedVideo = findRelevantVideo(question, videos);
+   const matchedVideo =
+  findRelevantVideo(question, videos, intent);
 
     // =========================
     // PRIORITY MATCHING
@@ -427,8 +450,7 @@ Please provide patientId or file number.`,
     }
 
     // ================= GEMINI =================
-   const ai =
-  createGeminiClient(apiKey); 
+    const ai = createGeminiClient(apiKey);
 
     const chat = ai.chats.create({
       model: "gemini-2.5-flash",
@@ -568,19 +590,50 @@ ${question}
 app.get("/documents/:user", (req, res) => {
   const user = req.params.user;
 
-  if (!fs.existsSync(docsPath)) {
-    return res.json([]);
+  let result = [];
+
+  // =========================
+  // PDF DOCUMENTS
+  // =========================
+
+  if (fs.existsSync(docsPath)) {
+    try {
+      const docs = JSON.parse(fs.readFileSync(docsPath, "utf-8"));
+
+      result.push(
+        ...docs
+          .filter((d) => d.user === user)
+          .map((d) => ({
+            filename: d.filename,
+            type: "pdf",
+          })),
+      );
+    } catch {}
   }
+
+  // =========================
+  // PARQUET DOCUMENTS
+  // =========================
 
   try {
-    const docs = JSON.parse(fs.readFileSync(docsPath, "utf-8"));
+    const parquetDir = path.join(__dirname, "../data", user, "parquet");
 
-    const userDocs = docs.filter((d) => d.user === user);
+    if (fs.existsSync(parquetDir)) {
+      const parquetFiles = fs
+        .readdirSync(parquetDir)
+        .filter((file) => file.endsWith(".parquet"))
+        .map((file) => ({
+          filename: file,
+          type: "parquet",
+        }));
 
-    res.json(userDocs);
+      result.push(...parquetFiles);
+    }
   } catch (err) {
-    res.json([]);
+    console.log(err);
   }
+
+  res.json(result);
 });
 
 // ================= SERVER =================

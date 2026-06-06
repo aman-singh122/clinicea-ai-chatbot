@@ -7,48 +7,141 @@ import db from "../duckdb/duckdbConnection.js";
 
 async function csvToParquet(
 
-  csvPath,
-  parquetPath
+csvPath,
+parquetPath
 
 ) {
 
-  // =========================
-  // CLEAN PATHS
-  // =========================
+// =========================
+// CLEAN PATHS
+// =========================
 
-  const cleanCSVPath =
+const cleanCSVPath =
 
-    csvPath.replace(
-      /\\/g,
-      "/"
-    );
 
-  const cleanParquetPath =
+csvPath.replace(
+  /\\/g,
+  "/"
+);
 
-    parquetPath.replace(
-      /\\/g,
-      "/"
-    );
 
-  // =========================
-  // SQL
-  // =========================
+const cleanParquetPath =
 
-  const sql = `
+
+parquetPath.replace(
+  /\\/g,
+  "/"
+);
+
+
+// =========================
+// FIXED TABLE NAMES
+// =========================
+
+let tableName = "";
+
+// =========================
+// APPOINTMENTS
+// =========================
+
+if (
+
+
+cleanParquetPath
+  .toLowerCase()
+  .includes("appointment")
+
+
+) {
+
+
+tableName =
+  "appointments";
+
+
+}
+
+// =========================
+// BILL ITEMS
+// =========================
+
+else if (
+
+
+cleanParquetPath
+  .toLowerCase()
+  .includes("billitem")
+
+
+) {
+
+
+tableName =
+  "billitems";
+
+
+}
+
+// =========================
+// BILLS
+// =========================
+
+else if (
+
+
+cleanParquetPath
+  .toLowerCase()
+  .includes("bill")
+
+
+) {
+
+
+tableName =
+  "bills";
+
+
+}
+
+// =========================
+// SAFETY
+// =========================
+
+else {
+
+
+throw new Error(
+  "Unknown dataset type"
+);
+
+
+}
+
+// =========================
+// SQL
+// =========================
+
+const sql = `
+
+-- =========================
+-- CSV → PARQUET
+-- =========================
 
 COPY (
 
-  SELECT *
+SELECT *
 
-  FROM read_csv_auto(
+FROM read_csv_auto(
 
-    '${cleanCSVPath}',
 
-    sample_size = -1,
+'${cleanCSVPath}',
 
-    ignore_errors = true
+sample_size = -1,
 
-  )
+ignore_errors = true
+
+
+)
 
 )
 
@@ -56,57 +149,89 @@ TO '${cleanParquetPath}'
 
 (FORMAT PARQUET);
 
+-- =========================
+-- CREATE MANAGED TABLE
+-- =========================
+
+CREATE OR REPLACE TABLE ${tableName} AS
+
+SELECT *
+
+FROM read_parquet(
+
+'${cleanParquetPath}'
+
+);
+
 `;
 
-  console.log(
-    "\nCSV TO PARQUET SQL:\n",
-    sql
-  );
+// =========================
+// DEBUG
+// =========================
 
-  // =========================
-  // EXECUTE
-  // =========================
+console.log(
+"\nCSV TO PARQUET SQL:\n",
+sql
+);
 
-  return new Promise(
+console.log(
+"\nDUCKDB TABLE:\n",
+tableName
+);
 
-    (
-      resolve,
-      reject
-    ) => {
+// =========================
+// EXECUTE
+// =========================
 
-      db.run(
+return new Promise(
 
-        sql,
 
-        (err) => {
+(
+  resolve,
+  reject
+) => {
 
-          if (err) {
+  db.run(
 
-            console.log(
-              "\nCSV → PARQUET FAILED:\n"
-            );
+    sql,
 
-            console.log(err);
+    (err) => {
 
-            reject(err);
+      if (err) {
 
-          } else {
+        console.log(
+          "\nCSV → PARQUET FAILED:\n"
+        );
 
-            console.log(
-              "\nPARQUET GENERATED SUCCESSFULLY"
-            );
+        console.log(err);
 
-            resolve();
+        reject(err);
 
-          }
+      }
 
-        }
+      else {
 
-      );
+        console.log(
+          "\nPARQUET GENERATED SUCCESSFULLY"
+        );
+
+        console.log(
+          "\nDUCKDB TABLE CREATED:",
+          tableName
+        );
+
+        resolve();
+
+      }
 
     }
 
   );
+
+}
+
+
+);
 
 }
 

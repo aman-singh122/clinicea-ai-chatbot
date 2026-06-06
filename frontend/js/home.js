@@ -49,27 +49,43 @@ let docs = [];
 let activeDoc = null;
 let chatHistory = [];
 
-let csvMode = false;
+let csvMode =
+  localStorage.getItem("csvMode") === "true";
 
-const csvModeBtn = document.getElementById("csvModeBtn");
+const csvModeBtn =
+  document.getElementById("csvModeBtn");
+
+function updateCsvButton() {
+  if (csvMode) {
+    csvModeBtn.innerText = "CSV ON";
+    csvModeBtn.classList.add("csv-active");
+  } else {
+    csvModeBtn.innerText = "CSV Mode";
+    csvModeBtn.classList.remove("csv-active");
+  }
+}
+
+updateCsvButton();
 
 csvModeBtn.onclick = () => {
   csvMode = !csvMode;
 
-  if (csvMode) {
-    csvModeBtn.innerText = "CSV ON";
+  localStorage.setItem(
+    "csvMode",
+    csvMode
+  );
 
-    csvModeBtn.classList.add("csv-active");
+  updateCsvButton();
 
-    showToast("CSV Analytics Mode Enabled", "success");
-  } else {
-    csvModeBtn.innerText = "CSV Mode";
-
-    csvModeBtn.classList.remove("csv-active");
-
-    showToast("Normal Chat Mode Enabled", "success");
-  }
+  showToast(
+    csvMode
+      ? "CSV Analytics Mode Enabled"
+      : "Normal Chat Mode Enabled",
+    "success"
+  );
 };
+
+
 
 // ── STOP GENERATION ──
 let stopRequested = false;
@@ -233,6 +249,9 @@ async function uploadFile(file) {
 }
 
 async function uploadAnalyticsFile(file) {
+
+  console.log("UPLOADING:", file.name);
+console.log("SIZE MB:", file.size / 1024 / 1024);
   uploadProgress.style.display = "flex";
 
   const user = userSelect.value;
@@ -263,11 +282,16 @@ async function uploadAnalyticsFile(file) {
     } else {
       showToast(data.error || "Upload failed", "error");
     }
-  } catch (error) {
-    uploadProgress.style.display = "none";
+} catch (error) {
 
-    showToast("Upload failed", "error");
-  }
+  console.log("UPLOAD ERROR:");
+
+  console.log(error);
+
+  uploadProgress.style.display = "none";
+
+  showToast("Upload failed", "error");
+}
 }
 
 function addDoc(name, size) {
@@ -1202,25 +1226,7 @@ function openDashboard() {
   frame.src = "dashboard.html";
 }
 
-const csvBtn = document.getElementById("csvModeBtn");
 
-csvBtn.onclick = () => {
-  csvMode = !csvMode;
-
-  if (csvMode) {
-    csvBtn.style.background = "#7c6af7";
-
-    csvBtn.style.color = "white";
-
-    showToast("CSV Analytics Mode ON");
-  } else {
-    csvBtn.style.background = "";
-
-    csvBtn.style.color = "";
-
-    showToast("Normal Chat Mode ON");
-  }
-};
 
 function renderAnalytics(data) {
   const chartId = "chart_" + Date.now();

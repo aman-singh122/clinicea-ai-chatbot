@@ -147,11 +147,7 @@ async function sqlController(req, res) {
     // REPLACE TABLE
     // =========================
 
-    const finalSql = sql.replace(
-      /FROM\s+records/gi,
-
-      `FROM read_parquet('${parquetPath.replace(/\\/g, "/")}')`,
-    );
+    const finalSql = sql;
 
     // =========================
     // VALIDATE SQL
@@ -290,7 +286,6 @@ async function sqlController(req, res) {
 
       answer,
 
-      
       visualization,
 
       graphData,

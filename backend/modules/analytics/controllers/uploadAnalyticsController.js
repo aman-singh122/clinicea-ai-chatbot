@@ -32,6 +32,9 @@ async function uploadAnalyticsController(req, res) {
 
     const user = req.body.user || "user1";
 
+    console.log("ORIGINAL:", file.originalname);
+    console.log("EXT:", ext);
+    console.log("UPLOAD PATH:", uploadedPath);
     // =========================
     // CSV DETECTED
     // =========================
@@ -129,19 +132,22 @@ async function uploadAnalyticsController(req, res) {
       // DELETE TEMP CSV
       // =========================
 
-      setTimeout(() => {
-        try {
-          if (fs.existsSync(uploadedPath)) {
-            fs.unlinkSync(uploadedPath);
+      setTimeout(
+        () => {
+          try {
+            if (fs.existsSync(uploadedPath)) {
+              fs.unlinkSync(uploadedPath);
 
-            console.log("\nTEMP CSV DELETED");
+              console.log("\nTEMP CSV DELETED");
+            }
+          } catch (deleteError) {
+            console.log("\nTEMP CSV DELETE FAILED");
+
+            console.log(deleteError);
           }
-        } catch (deleteError) {
-          console.log("\nTEMP CSV DELETE FAILED");
-
-          console.log(deleteError);
-        }
-      }, 5000);
+        },
+        60 * 60 * 1000,
+      );
 
       // =========================
       // SUCCESS
@@ -165,19 +171,44 @@ async function uploadAnalyticsController(req, res) {
     // =========================
 
     if (ext === ".parquet") {
-      console.log("\nPARQUET UPLOADED:\n", uploadedPath);
+      console.log("PARQUET BLOCK ENTERED");
+      const parquetDir = path.join("data", user, "parquet");
+
+      if (!fs.existsSync(parquetDir)) {
+        fs.mkdirSync(parquetDir, {
+          recursive: true,
+        });
+      }
+
+      const finalPath = path.join(parquetDir, path.basename(uploadedPath));
+
+      try {
+        fs.renameSync(uploadedPath, finalPath);
+
+        console.log("FILE MOVED");
+      } catch (err) {
+        console.log("MOVE FAILED");
+
+        console.log(err);
+      }
+
+      console.log("FILE MOVED SUCCESSFULLY");
+
+      console.log("EXISTS IN PARQUET:", fs.existsSync(finalPath));
+
+      console.log("EXISTS IN TEMP:", fs.existsSync(uploadedPath));
+
+      console.log("\nPARQUET MOVED TO:\n", finalPath);
 
       return res.json({
         success: true,
-
         type: "parquet",
-
         message: "Parquet uploaded successfully",
-
-        parquet: uploadedPath,
+        parquet: finalPath,
       });
     }
 
+    console.log("PARQUET BLOCK ENTERED");
     // =========================
     // INVALID FILE
     // =========================

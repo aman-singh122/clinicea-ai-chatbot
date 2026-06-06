@@ -5,6 +5,10 @@ import getUserGemini
 from "../../../utils/getUserGemini.js";
 
 
+import predefinedQueries
+from "../semantic/predefinedQueries.js";
+
+
 async function sqlQueryGenerator(
 
   
@@ -35,6 +39,98 @@ if (!apiKey) {
 
 const ai =
   createGeminiClient(apiKey);
+
+
+  const q =
+  query.toLowerCase();
+
+// =========================
+// STANDARDIZED KPI ENGINE
+// =========================
+
+if (
+
+  q.includes("top revenue doctor") ||
+
+  q.includes("doctor revenue") ||
+
+  q.includes("doctor wise revenue") ||
+
+  q.includes("highest revenue doctor")
+
+) {
+
+  console.log(
+    "\nUSING STANDARDIZED KPI QUERY"
+  );
+
+  return predefinedQueries
+    .topRevenueDoctors;
+
+}
+
+// =========================
+// MONTHLY REVENUE
+// =========================
+
+if (
+
+  q.includes("monthly revenue") ||
+
+  q.includes("revenue trend")
+
+) {
+
+  console.log(
+    "\nUSING MONTHLY REVENUE QUERY"
+  );
+
+  return predefinedQueries
+    .monthlyRevenueTrend;
+
+}
+
+// =========================
+// APPOINTMENT STATUS
+// =========================
+
+if (
+
+  q.includes("appointment status") ||
+
+  q.includes("status distribution")
+
+) {
+
+  console.log(
+    "\nUSING STATUS DISTRIBUTION QUERY"
+  );
+
+  return predefinedQueries
+    .appointmentStatusDistribution;
+
+}
+
+// =========================
+// TOP SERVICES
+// =========================
+
+if (
+
+  q.includes("top services") ||
+
+  q.includes("top service")
+
+) {
+
+  console.log(
+    "\nUSING TOP SERVICES QUERY"
+  );
+
+  return predefinedQueries
+    .topServices;
+
+}
 
 // =========================
 // DEBUG
@@ -80,8 +176,22 @@ Your task is to convert natural language healthcare analytics questions into acc
 CORE RULES
 ================================================
 
-- Table name is always:
-records
+- Available tables:
+
+appointments
+bills
+billitems
+
+- Use the most relevant table based on the user question.
+
+- For appointment analytics use:
+appointments
+
+- For revenue/billing analytics use:
+bills
+
+- For medicine/item/service analytics use:
+billitems
 
 - Return ONLY raw SQL
 
@@ -195,7 +305,7 @@ SELECT
 
   COUNT(*) as total_appointments
 
-FROM records
+FROM appointments
 
 GROUP BY appointment_hour
 

@@ -1,0 +1,9 @@
+{
+  "watch": ["backend"],
+  "ignore": [
+    "data/*",
+    "data/**/*",
+    "frontend/*",
+    "frontend/**/*"
+  ]
+}

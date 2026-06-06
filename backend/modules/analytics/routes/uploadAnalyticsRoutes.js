@@ -54,18 +54,51 @@ const storage = multer.diskStorage({
   },
 });
 
-const upload = multer({ storage });
+const upload = multer({
+  storage,
 
+  limits: {
+    fileSize: 20 * 1024 * 1024 * 1024, // 20 GB
+  },
+});
+
+console.log("MULTER READY");
 // =========================
 // ROUTE
 // =========================
 
+router.use((req, res, next) => {
+
+  req.on("aborted", () => {
+
+    console.log("REQUEST ABORTED BY CLIENT");
+
+  });
+
+  next();
+
+});
+
+
 router.post(
   "/upload-analytics",
 
-  upload.single("file"),
+  (req, res, next) => {
+    upload.single("file")(req, res, (err) => {
+      if (err) {
+        console.log("MULTER ERROR:", err);
 
-  uploadAnalyticsController,
+        return res.status(500).json({
+          success: false,
+          error: err.message,
+        });
+      }
+
+      next();
+    });
+  },
+
+  uploadAnalyticsController
 );
 
 export default router;
