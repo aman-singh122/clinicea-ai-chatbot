@@ -6,6 +6,40 @@ function classifyColumns(schema) {
     dates: []
   };
 
+  const metricKeywords = [
+    "amount",
+    "revenue",
+    "price",
+    "cost",
+    "quantity",
+    "qty",
+    "count",
+    "total",
+    "paid",
+    "due",
+    "tax",
+    "sales",
+    "income",
+    "earning",
+    "profit",
+    "discount",
+    "fee",
+    "charge",
+    "duration",
+    "score",
+    "rate"
+  ];
+
+  const numericTypes = [
+    "INTEGER",
+    "BIGINT",
+    "DOUBLE",
+    "FLOAT",
+    "DECIMAL",
+    "NUMERIC",
+    "REAL"
+  ];
+
   for (const col of schema) {
 
     const name =
@@ -14,24 +48,30 @@ function classifyColumns(schema) {
     const type =
       col.type.toUpperCase();
 
-    if (
-      name.includes("amount") ||
-      name.includes("revenue") ||
-      name.includes("price") ||
-      name.includes("cost")
-    ) {
+    const isDate =
+      type.includes("DATE") ||
+      type.includes("TIMESTAMP");
 
-      result.metrics.push(col.name);
+    if (isDate) {
+
+      result.dates.push(col.name);
 
       continue;
     }
 
-    if (
-      type.includes("DATE") ||
-      type.includes("TIMESTAMP")
-    ) {
+    const isMetricByName =
+      metricKeywords.some(keyword =>
+        name.includes(keyword)
+      );
 
-      result.dates.push(col.name);
+    const isMetricByType =
+      numericTypes.some(numericType =>
+        type.includes(numericType)
+      );
+
+    if (isMetricByName || isMetricByType) {
+
+      result.metrics.push(col.name);
 
       continue;
     }

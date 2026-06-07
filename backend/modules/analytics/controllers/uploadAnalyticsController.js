@@ -8,6 +8,74 @@ import mergeParquetFiles from "../consolidation/mergeParquetFiles.js";
 
 import groupDatasetFiles from "../consolidation/groupDatasetFiles.js";
 
+import executeDuckQuery from "../duckdb/executeDuckQuery.js";
+
+import buildDatasetMetadata from "../semantic/buildDatasetMetadata.js";
+
+// =========================
+
+async function generateMetadataForParquet({
+  user,
+  dataset,
+  parquetPath
+}) {
+
+  try {
+
+    const cleanPath =
+      parquetPath.replace(
+        /\\/g,
+        "/"
+      );
+
+    const schemaSQL = `
+
+DESCRIBE
+SELECT *
+FROM read_parquet(
+'${cleanPath}'
+)
+
+`;
+
+    const schemaResult =
+      await executeDuckQuery(schemaSQL);
+
+    const schema =
+      schemaResult.map(col => ({
+
+        name:
+          col.column_name,
+
+        type:
+          col.column_type
+
+      }));
+
+    return buildDatasetMetadata({
+
+      user,
+
+      dataset,
+
+      schema
+
+    });
+
+  } catch (metadataError) {
+
+    console.log(
+      "\nDATASET METADATA GENERATION FAILED:\n"
+    );
+
+    console.log(metadataError);
+
+    return null;
+
+  }
+
+}
+
 // =========================
 
 async function uploadAnalyticsController(req, res) {
@@ -85,6 +153,21 @@ async function uploadAnalyticsController(req, res) {
 
         parquetPath,
       );
+
+      // =========================
+      // DYNAMIC METADATA
+      // =========================
+
+      await generateMetadataForParquet({
+
+        user,
+
+        dataset:
+          path.parse(parquetFileName).name,
+
+        parquetPath
+
+      });
 
       // =========================
       // CONSOLIDATION
@@ -199,6 +282,22 @@ async function uploadAnalyticsController(req, res) {
       console.log("EXISTS IN TEMP:", fs.existsSync(uploadedPath));
 
       console.log("\nPARQUET MOVED TO:\n", finalPath);
+
+      // =========================
+      // DYNAMIC METADATA
+      // =========================
+
+      await generateMetadataForParquet({
+
+        user,
+
+        dataset:
+          path.parse(finalPath).name,
+
+        parquetPath:
+          finalPath
+
+      });
 
       return res.json({
         success: true,

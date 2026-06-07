@@ -1,0 +1,130 @@
+{
+  "../../../config/gemini.js": [],
+  "../../utils/encryption.js": [],
+  "../../utils/getUserGemini.js": [
+    "../../utils/encryption.js"
+  ],
+  "config/dashboardConfig.js": [],
+  "consolidation/datasetFamilies.js": [],
+  "consolidation/extractPartitionInfo.js": [],
+  "consolidation/groupDatasetFiles.js": [
+    "consolidation/extractPartitionInfo.js"
+  ],
+  "consolidation/mergeParquetFiles.js": [
+    "duckdb/duckdbConnection.js"
+  ],
+  "controllers/sqlController.js": [
+    "duckdb/executeDuckQuery.js",
+    "graphs/graphDecisionEngine.js",
+    "graphs/graphGenerator.js",
+    "graphs/smartVisualizationSelector.js",
+    "semantic/businessRules.js",
+    "semantic/loadDatasetMetadata.js",
+    "sql/dynamicDatasetSelector.js",
+    "sql/dynamicRepairSQLQuery.js",
+    "sql/dynamicSQLQueryGenerator.js",
+    "sql/repairSQLQuery.js",
+    "sql/selectDataset.js",
+    "sql/sqlAnswerBuilder.js",
+    "sql/sqlQueryGenerator.js",
+    "sql/validateSQL.js",
+    "utils/datasetRouter.js",
+    "utils/getAllDatasets.js",
+    "utils/getDatasetSchemas.js"
+  ],
+  "controllers/uploadAnalyticsController.js": [
+    "consolidation/groupDatasetFiles.js",
+    "consolidation/mergeParquetFiles.js",
+    "duckdb/executeDuckQuery.js",
+    "parquet/csvToParquet.js",
+    "semantic/buildDatasetMetadata.js"
+  ],
+  "dashboard/appointmentsDashboard.js": [
+    "config/dashboardConfig.js",
+    "duckdb/duckdbConnection.js"
+  ],
+  "dashboard/billItemsDashboard.js": [],
+  "dashboard/billsDashboard.js": [],
+  "dashboard/dashboardController.js": [
+    "dashboard/appointmentsDashboard.js"
+  ],
+  "dashboard/dashboardRoutes.js": [
+    "dashboard/dashboardController.js"
+  ],
+  "duckdb/duckdbConnection.js": [],
+  "duckdb/executeDuckQuery.js": [
+    "duckdb/duckdbConnection.js"
+  ],
+  "graphs/graphDecisionEngine.js": [],
+  "graphs/graphGenerator.js": [],
+  "graphs/smartVisualizationSelector.js": [],
+  "parquet/autoMergeParquetFolder.js": [
+    "parquet/mergeParquetFiles.js"
+  ],
+  "parquet/csvToParquet.js": [
+    "duckdb/duckdbConnection.js"
+  ],
+  "parquet/generateParquet.js": [],
+  "parquet/mergeParquetFiles.js": [],
+  "routes/sqlRoutes.js": [
+    "controllers/sqlController.js"
+  ],
+  "routes/uploadAnalyticsRoutes.js": [
+    "controllers/uploadAnalyticsController.js"
+  ],
+  "semantic/buildDatasetMetadata.js": [
+    "semantic/columnClassifier.js"
+  ],
+  "semantic/businessRules.js": [],
+  "semantic/columnClassifier.js": [],
+  "semantic/datasetMetadata.js": [],
+  "semantic/loadDatasetMetadata.js": [],
+  "semantic/predefinedQueries.js": [],
+  "sql/dynamicDatasetSelector.js": [],
+  "sql/dynamicRepairSQLQuery.js": [
+    "../../../config/gemini.js",
+    "../../utils/getUserGemini.js"
+  ],
+  "sql/dynamicSQLQueryGenerator.js": [
+    "../../../config/gemini.js",
+    "../../utils/getUserGemini.js"
+  ],
+  "sql/repairSQLQuery.js": [
+    "../../../config/gemini.js",
+    "../../utils/getUserGemini.js"
+  ],
+  "sql/selectDataset.js": [
+    "../../../config/gemini.js",
+    "../../utils/getUserGemini.js",
+    "semantic/businessRules.js",
+    "semantic/datasetMetadata.js",
+    "utils/datasetRouter.js"
+  ],
+  "sql/sqlAnswerBuilder.js": [
+    "../../../config/gemini.js",
+    "../../utils/getUserGemini.js"
+  ],
+  "sql/sqlQueryGenerator.js": [
+    "../../../config/gemini.js",
+    "../../utils/getUserGemini.js",
+    "semantic/predefinedQueries.js"
+  ],
+  "sql/validateSQL.js": [],
+  "tests/generateDummyData.js": [],
+  "tests/testAutoMerge.js": [
+    "parquet/autoMergeParquetFolder.js"
+  ],
+  "tests/testColumnClassifier.js": [
+    "semantic/columnClassifier.js"
+  ],
+  "tests/testDuck.js": [],
+  "tests/testMerge.js": [
+    "parquet/mergeParquetFiles.js"
+  ],
+  "utils/datasetRouter.js": [],
+  "utils/getAllDatasets.js": [],
+  "utils/getDatasetSchemas.js": [
+    "duckdb/executeDuckQuery.js"
+  ],
+  "utils/getLatestDatasetFiles.js": []
+}

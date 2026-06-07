@@ -1,147 +1,78 @@
 import db from "../duckdb/duckdbConnection.js";
 
 // =========================
-// CSV → PARQUET
+// CSV TO PARQUET
 // USING DUCKDB
 // =========================
 
 async function csvToParquet(
-
-csvPath,
-parquetPath
-
+  csvPath,
+  parquetPath
 ) {
 
-// =========================
-// CLEAN PATHS
-// =========================
+  // =========================
+  // CLEAN PATHS
+  // =========================
 
-const cleanCSVPath =
+  const cleanCSVPath =
+    csvPath.replace(
+      /\\/g,
+      "/"
+    );
 
+  const cleanParquetPath =
+    parquetPath.replace(
+      /\\/g,
+      "/"
+    );
 
-csvPath.replace(
-  /\\/g,
-  "/"
-);
+  // =========================
+  // STATIC MANAGED TABLES
+  // =========================
 
+  let tableName = "";
 
-const cleanParquetPath =
+  const lowerParquetPath =
+    cleanParquetPath.toLowerCase();
 
+  if (
+    lowerParquetPath.includes("appointment")
+  ) {
 
-parquetPath.replace(
-  /\\/g,
-  "/"
-);
+    tableName =
+      "appointments";
 
+  } else if (
+    lowerParquetPath.includes("billitem")
+  ) {
 
-// =========================
-// FIXED TABLE NAMES
-// =========================
+    tableName =
+      "billitems";
 
-let tableName = "";
+  } else if (
+    lowerParquetPath.includes("bill")
+  ) {
 
-// =========================
-// APPOINTMENTS
-// =========================
+    tableName =
+      "bills";
 
-if (
+  }
 
+  // =========================
+  // SQL
+  // =========================
 
-cleanParquetPath
-  .toLowerCase()
-  .includes("appointment")
-
-
-) {
-
-
-tableName =
-  "appointments";
-
-
-}
-
-// =========================
-// BILL ITEMS
-// =========================
-
-else if (
-
-
-cleanParquetPath
-  .toLowerCase()
-  .includes("billitem")
-
-
-) {
-
-
-tableName =
-  "billitems";
-
-
-}
-
-// =========================
-// BILLS
-// =========================
-
-else if (
-
-
-cleanParquetPath
-  .toLowerCase()
-  .includes("bill")
-
-
-) {
-
-
-tableName =
-  "bills";
-
-
-}
-
-// =========================
-// SAFETY
-// =========================
-
-else {
-
-
-throw new Error(
-  "Unknown dataset type"
-);
-
-
-}
-
-// =========================
-// SQL
-// =========================
-
-const sql = `
-
--- =========================
--- CSV → PARQUET
--- =========================
+  const copySql = `
 
 COPY (
 
-SELECT *
+  SELECT *
 
-FROM read_csv_auto(
-
-
-'${cleanCSVPath}',
-
-sample_size = -1,
-
-ignore_errors = true
-
-
-)
+  FROM read_csv_auto(
+    '${cleanCSVPath}',
+    sample_size = -1,
+    ignore_errors = true
+  )
 
 )
 
@@ -149,89 +80,91 @@ TO '${cleanParquetPath}'
 
 (FORMAT PARQUET);
 
--- =========================
--- CREATE MANAGED TABLE
--- =========================
+`;
+
+  const tableSql =
+    tableName
+      ? `
 
 CREATE OR REPLACE TABLE ${tableName} AS
 
 SELECT *
 
 FROM read_parquet(
-
-'${cleanParquetPath}'
-
+  '${cleanParquetPath}'
 );
 
-`;
+`
+      : "";
 
-// =========================
-// DEBUG
-// =========================
+  const sql =
+    copySql + tableSql;
 
-console.log(
-"\nCSV TO PARQUET SQL:\n",
-sql
-);
+  // =========================
+  // DEBUG
+  // =========================
 
-console.log(
-"\nDUCKDB TABLE:\n",
-tableName
-);
-
-// =========================
-// EXECUTE
-// =========================
-
-return new Promise(
-
-
-(
-  resolve,
-  reject
-) => {
-
-  db.run(
-
-    sql,
-
-    (err) => {
-
-      if (err) {
-
-        console.log(
-          "\nCSV → PARQUET FAILED:\n"
-        );
-
-        console.log(err);
-
-        reject(err);
-
-      }
-
-      else {
-
-        console.log(
-          "\nPARQUET GENERATED SUCCESSFULLY"
-        );
-
-        console.log(
-          "\nDUCKDB TABLE CREATED:",
-          tableName
-        );
-
-        resolve();
-
-      }
-
-    }
-
+  console.log(
+    "\nCSV TO PARQUET SQL:\n",
+    sql
   );
 
-}
+  console.log(
+    "\nDUCKDB TABLE:\n",
+    tableName || "dynamic parquet only"
+  );
 
+  // =========================
+  // EXECUTE
+  // =========================
 
-);
+  return new Promise(
+    (resolve, reject) => {
+
+      db.run(
+        sql,
+        (err) => {
+
+          if (err) {
+
+            console.log(
+              "\nCSV TO PARQUET FAILED:\n"
+            );
+
+            console.log(err);
+
+            reject(err);
+
+          } else {
+
+            console.log(
+              "\nPARQUET GENERATED SUCCESSFULLY"
+            );
+
+            if (tableName) {
+
+              console.log(
+                "\nDUCKDB TABLE CREATED:",
+                tableName
+              );
+
+            } else {
+
+              console.log(
+                "\nDYNAMIC DATASET SAVED AS PARQUET ONLY"
+              );
+
+            }
+
+            resolve();
+
+          }
+
+        }
+      );
+
+    }
+  );
 
 }
 

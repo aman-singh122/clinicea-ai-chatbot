@@ -1,0 +1,51 @@
+{
+  "dataset": "bills_-202605071243",
+  "metrics": [
+    "Previous Proforma No",
+    "Patient Bill Amt",
+    "Patient Paid Amt",
+    "Corp Bill Amt",
+    "Corp Paid Amt",
+    "Bill Sub Total Amt",
+    "Discount Amt",
+    "Tax Amt",
+    "Total Billed Amt",
+    "Total Paid Amt",
+    "Total Due Amt"
+  ],
+  "dimensions": [
+    "Bill Time",
+    "Bill No",
+    "Bill Type",
+    "Bill Proforma",
+    "Bill For",
+    "PatFileNo",
+    "PatMobile",
+    "PatEmail",
+    "CommPref",
+    "Patient Category",
+    "Patient Source",
+    "BillToName",
+    "Bill To Type",
+    "Internal Comments",
+    "BillStatus",
+    "BillDocName",
+    "Policy",
+    "Policy No",
+    "Created By",
+    "Modified By",
+    "Is Bill Closed",
+    "OrgName"
+  ],
+  "dates": [
+    "Bill Date",
+    "Bill Due Date",
+    "Proforma Date",
+    "Patient Registration Date",
+    "First Checked Out Appt",
+    "Created Date",
+    "Modified Date",
+    "Bill Closed Date"
+  ],
+  "createdAt": "2026-06-07T15:43:53.298Z"
+}

@@ -11,16 +11,23 @@ from "../semantic/predefinedQueries.js";
 
 async function sqlQueryGenerator(
 
-  
+  user,
   query,
   schemaInfo,
   semanticInfo
 ) {
 
+console.log("USER PARAM:");
+console.log(user);
 
-const apiKey =
-  getUserGemini("user1");
 
+
+
+  const apiKey =
+  getUserGemini(user);
+
+console.log("API KEY FOUND:");
+console.log(!!apiKey);
 // =========================
 // API KEY CHECK
 // =========================
@@ -50,13 +57,9 @@ const ai =
 
 if (
 
-  q.includes("top revenue doctor") ||
+  q.includes("doctor") &&
 
-  q.includes("doctor revenue") ||
-
-  q.includes("doctor wise revenue") ||
-
-  q.includes("highest revenue doctor")
+  q.includes("revenue")
 
 ) {
 
@@ -168,6 +171,8 @@ console.log(
 
   const prompt = `
 
+
+
 You are an expert DuckDB SQL generator.
 
 Your task is to convert natural language healthcare analytics questions into accurate DuckDB SQL queries.
@@ -198,6 +203,20 @@ billitems
 - No markdown
 - No explanation
 - No comments
+
+================================================
+DETERMINISTIC RULE
+================================================
+
+For the same question and same schema,
+ALWAYS generate the exact same SQL.
+
+Do not choose alternative columns.
+
+Do not rewrite logic.
+
+Be deterministic.
+
 
 - NEVER hallucinate columns
 
@@ -493,6 +512,9 @@ ORDER BY metric DESC
 
 LIMIT 5
 
+
+
+
 ================================================
 LOWEST RULES
 ================================================
@@ -598,6 +620,53 @@ ALTER
 BUSINESS CONTEXT
 ================================================
 
+================================================
+STRICT ENTITY RULES
+================================================
+
+For bills dataset:
+
+doctor = "BillDocName"
+
+patient = "Bill For"
+
+NEVER use "Bill For"
+when user asks:
+
+doctor
+doctors
+physician
+clinician
+
+------------------------------------------------
+
+For appointments dataset:
+
+doctor = "For"
+
+patient = "ApptWithFullName"
+
+------------------------------------------------
+
+For billitems dataset:
+
+doctor = "Consulted By"
+
+patient = "Bill For"
+
+================================================
+
+${JSON.stringify(
+  semanticInfo,
+  null,
+  2
+)}
+
+
+================================================
+BUSINESS MAPPING
+================================================
+
 ${JSON.stringify(
   semanticInfo,
   null,
@@ -631,14 +700,18 @@ while (retries > 0) {
 
   try {
 
-    response =
-      await ai.models.generateContent({
+  response =
+  await ai.models.generateContent({
 
-        model: "gemini-2.5-flash",
+    model: "gemini-2.5-flash",
 
-        contents: prompt
+    contents: prompt,
 
-      });
+    generationConfig: {
+      temperature: 0
+    }
+
+  });
 
     break;
 

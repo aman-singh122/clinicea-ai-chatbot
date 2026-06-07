@@ -10,6 +10,7 @@ from "../../../utils/getUserGemini.js";
 
 async function sqlAnswerBuilder(
 
+  user,
   query,
   result
 
@@ -36,7 +37,7 @@ async function sqlAnswerBuilder(
   // =========================
 
   const apiKey =
-    getUserGemini("user1");
+    getUserGemini(user);
 
   if (!apiKey) {
 
@@ -61,27 +62,21 @@ async function sqlAnswerBuilder(
   // NORMALIZE BIGINT
   // =========================
 
-  const normalizedResult =
-    JSON.stringify(
-
-      result,
-
-      (key, value) =>
-
-        typeof value === "bigint"
-          ? Number(value)
-          : value,
-
-      2
-
-    );
+const normalizedResult =
+  JSON.stringify(
+    result.slice(0, 50),
+    (key, value) =>
+      typeof value === "bigint"
+        ? Number(value)
+        : value,
+    2
+  );
 
   // =========================
   // DETECT RESULT TYPE
   // =========================
 
-  const isMultiRow =
-    result.length > 1;
+
 
   // =========================
   // PROMPT
@@ -226,14 +221,18 @@ Generate a clean analytics insight.
   // GEMINI RESPONSE
   // =========================
 
-  const response =
-    await ai.models.generateContent({
+const response =
+  await ai.models.generateContent({
 
-      model: "gemini-2.5-flash",
+    model: "gemini-2.5-flash",
 
-      contents: prompt
+    contents: prompt,
 
-    });
+    generationConfig: {
+      temperature: 0
+    }
+
+  });
 
   // =========================
   // SAFE RESPONSE EXTRACTION

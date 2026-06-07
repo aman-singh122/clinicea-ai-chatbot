@@ -1,3 +1,4 @@
+
 import path from "path";
 
 import { fileURLToPath } from "url";
@@ -13,6 +14,8 @@ import smartVisualizationSelector from "../graphs/smartVisualizationSelector.js"
 import executeDuckQuery from "../duckdb/executeDuckQuery.js";
 
 import businessRules from "../semantic/businessRules.js";
+
+import loadDatasetMetadata from "../semantic/loadDatasetMetadata.js";
 
 // =========================
 // AI + ANALYTICS
@@ -36,7 +39,15 @@ import getAllDatasets from "../utils/getAllDatasets.js";
 
 import getDatasetSchemas from "../utils/getDatasetSchemas.js";
 
+import datasetRouter from "../utils/datasetRouter.js";
+
 import selectDataset from "../sql/selectDataset.js";
+
+import selectDynamicDataset from "../sql/dynamicDatasetSelector.js";
+
+import dynamicSQLQueryGenerator from "../sql/dynamicSQLQueryGenerator.js";
+
+import dynamicRepairSQLQuery from "../sql/dynamicRepairSQLQuery.js";
 
 // =========================
 
@@ -44,17 +55,80 @@ const __filename = fileURLToPath(import.meta.url);
 
 const __dirname = path.dirname(__filename);
 
+
 // =========================
 
 async function sqlController(req, res) {
+  console.log("REQ BODY:");
+console.log(req.body);
   try {
-    const { query, user } = req.body;
+    const { query, user, dataset } = req.body;
 
     // =========================
     // GET ALL DATASETS
     // =========================
 
     const datasets = getAllDatasets(user);
+    const schemaMap =
+  await getDatasetSchemas(datasets);
+
+const metadataMap =
+  loadDatasetMetadata(user);
+
+      let selectedDataset;
+let matchedDataset;
+let selectedMetadata = null;
+let useDynamicFlow = false;
+let forceDataset = false;
+    // =========================
+// USER SELECTED DATASET
+// =========================
+
+if (dataset) {
+
+  console.log(
+    "\nUSER SELECTED DATASET:\n",
+    dataset
+  );
+
+  matchedDataset = datasets.find(
+    d =>
+      d.file === dataset ||
+      d.dataset === dataset.replace(
+        ".parquet",
+        ""
+      )
+  );
+
+  if (!matchedDataset) {
+    return res.status(400).json({
+      success: false,
+      answer: "Selected dataset not found."
+    });
+  }
+
+  selectedDataset =
+    matchedDataset.dataset;
+
+  forceDataset = true;
+  useDynamicFlow = true;
+
+  selectedMetadata =
+  metadataMap[
+    matchedDataset.dataset
+  ];
+
+console.log(
+  "FORCED DATASET METADATA:",
+  selectedMetadata
+);
+
+
+  console.log(
+    "\nFORCED DATASET PATH:\n",
+    matchedDataset.fullPath
+  );
+}
 
     console.log("\nALL DATASETS:\n", datasets);
 
@@ -74,35 +148,99 @@ async function sqlController(req, res) {
     // GET ALL SCHEMAS
     // =========================
 
-    const schemaMap = await getDatasetSchemas(datasets);
+   
 
     console.log("\nSCHEMA MAP:\n", schemaMap);
 
     // =========================
-    // AI DATASET SELECTION
+    // LOAD DYNAMIC METADATA
     // =========================
 
-    const selectedDataset = await selectDataset({
-      query,
+    
+    console.log("\nDYNAMIC METADATA MAP:\n", metadataMap);
 
-      datasets,
+    // =========================
+    // STATIC VS DYNAMIC ROUTING
+    // =========================
 
-      schemaMap,
-    });
+    const staticRoute = datasetRouter(query);
 
-    console.log("\nSELECTED DATASET:\n", selectedDataset);
+    const shouldUseStaticFlow = staticRoute && staticRoute !== "AI_FALLBACK";
+
+
+
+if (!forceDataset) {
+    if (shouldUseStaticFlow) {
+      console.log("\nSTATIC ROUTE CONFIRMED:\n", staticRoute);
+
+      // =========================
+      // EXISTING STATIC AI DATASET SELECTION
+      // =========================
+
+      selectedDataset = await selectDataset({
+        query,
+
+        datasets,
+
+        schemaMap,
+      });
+
+      console.log("\nSELECTED STATIC DATASET:\n", selectedDataset);
+
+      matchedDataset = datasets.find(
+        (dataset) =>
+          dataset.dataset.toLowerCase() === selectedDataset.toLowerCase(),
+      );
+    } else {
+      console.log("\nSTATIC ROUTER LOW CONFIDENCE - TRYING DYNAMIC METADATA");
+
+      const dynamicSelection = selectDynamicDataset({
+        query,
+
+        datasets,
+
+        metadataMap,
+      });
+
+      if (dynamicSelection) {
+        useDynamicFlow = true;
+
+        matchedDataset = dynamicSelection.dataset;
+
+        selectedDataset = matchedDataset.dataset;
+
+        selectedMetadata = dynamicSelection.metadata;
+
+        console.log("\nSELECTED DYNAMIC DATASET:\n", selectedDataset);
+      } else {
+        console.log(
+          "\nDYNAMIC SELECTION FAILED - USING EXISTING STATIC FALLBACK",
+        );
+
+        selectedDataset = await selectDataset({
+          query,
+
+          datasets,
+
+          schemaMap,
+        });
+
+        console.log("\nSELECTED FALLBACK DATASET:\n", selectedDataset);
+
+        matchedDataset = datasets.find(
+          (dataset) =>
+            dataset.dataset.toLowerCase() === selectedDataset.toLowerCase(),
+        );
+      }
+    }
+   // existing routing code
+
+}
+
+
 
     // =========================
     // FIND DATASET
-    // =========================
-
-    const matchedDataset = datasets.find(
-      (dataset) =>
-        dataset.dataset.toLowerCase() === selectedDataset.toLowerCase(),
-    );
-
-    // =========================
-    // CHECK
     // =========================
 
     if (!matchedDataset) {
@@ -112,6 +250,27 @@ async function sqlController(req, res) {
         answer: "Dataset selection failed.",
       });
     }
+
+    // =========================
+// FORCE DYNAMIC FLOW
+// =========================
+
+useDynamicFlow = true;
+
+selectedMetadata =
+  metadataMap[
+    matchedDataset.dataset
+  ];
+
+console.log(
+  "\nFORCED DYNAMIC FLOW:",
+  useDynamicFlow
+);
+
+console.log(
+  "\nSELECTED METADATA:",
+  selectedMetadata
+);
 
     // =========================
     // PARQUET PATH
@@ -133,11 +292,18 @@ async function sqlController(req, res) {
     // AI SQL GENERATION
     // =========================
 
-    const sql = await sqlQueryGenerator(
+const sql = useDynamicFlow
+  ? await dynamicSQLQueryGenerator({
       query,
-
+      user,
       schemaInfo,
-
+      metadata: selectedMetadata,
+      parquetPath,
+    })
+  : await sqlQueryGenerator(
+      user,
+      query,
+      schemaInfo,
       businessRules[matchedDataset.dataset] || {},
     );
 
@@ -174,15 +340,31 @@ async function sqlController(req, res) {
       // REPAIR SQL
       // =========================
 
-      const repairedSQL = await repairSQLQuery(
-        query,
+      const repairedSQL = useDynamicFlow
+        ? await dynamicRepairSQLQuery({
+            query,
 
-        safeSQL,
+            user,
 
-        sqlError.message,
+            failedSQL: safeSQL,
 
-        schemaInfo,
-      );
+            errorMessage: sqlError.message,
+
+            schemaInfo,
+
+            metadata: selectedMetadata,
+
+            parquetPath,
+          })
+        : await repairSQLQuery(
+            query,
+
+            safeSQL,
+
+            sqlError.message,
+
+            schemaInfo,
+          );
 
       console.log("\nREPAIRED SQL:\n", repairedSQL);
 
@@ -263,12 +445,19 @@ async function sqlController(req, res) {
     // NATURAL LANGUAGE ANSWER
     // =========================
 
-    const answer = await sqlAnswerBuilder(
-      query,
+const answer = await sqlAnswerBuilder(
+  user,
+  query,
+  result
+);
 
-      result,
-    );
+console.log("\nQUESTION:\n", query);
 
+console.log("\nFINAL SQL:\n", safeSQL);
+
+console.log("\nROWS:\n", result.length);
+
+console.log("\nANSWER:\n", answer);
     // =========================
     // RESPONSE
     // =========================

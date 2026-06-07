@@ -1,0 +1,21 @@
+ApptStartDtm,Appt Start Time,Appt End Time,Appointment Duration,Patient Name,Mobile,Email Id,File No,Patient City,Service Name,Service Category,Service Price Before Tax,Service Price After Tax,Doctor Name,Status,Appointment Source,Created On Date,Organisation Name
+
+08-04-2026,9:00 AM,9:30 AM,30 Mins,Rahul Sharma,9876543210,rahul@gmail.com,CM-101,Ranchi,General Consultation,Consultation,500,590,Dr. Amit Kumar,Scheduled,Online Booking,07-04-2026,MediCare Clinic
+
+08-04-2026,10:00 AM,10:45 AM,45 Mins,Priya Singh,9123456789,priya@gmail.com,CM-102,Dhanbad,Blood Test,Pathology,1200,1416,Dr. Neha Verma,Check Out,Reception,07-04-2026,MediCare Clinic
+
+08-04-2026,11:00 AM,11:30 AM,30 Mins,Amit Das,9988776655,amit@gmail.com,CM-103,Bokaro,ECG,Cardiology,800,944,Dr. Rajesh Gupta,Waiting,Online Booking,07-04-2026,MediCare Clinic
+
+08-04-2026,12:00 PM,12:15 PM,15 Mins,Sneha Roy,9871203456,sneha@gmail.com,CM-104,Jamshedpur,Follow Up,Consultation,300,354,Dr. Amit Kumar,Completed,Reception,07-04-2026,MediCare Clinic
+
+08-04-2026,1:00 PM,1:45 PM,45 Mins,Vikash Kumar,9090909090,vikash@gmail.com,CM-105,Giridih,X-Ray,Radiology,1500,1770,Dr. Neha Verma,Cancelled,Online Booking,07-04-2026,MediCare Clinic
+
+09-04-2026,9:30 AM,10:00 AM,30 Mins,Ritu Kumari,8765432109,ritu@gmail.com,CM-106,Ranchi,Dental Checkup,Dentistry,700,826,Dr. Sanjay Singh,Scheduled,Reception,08-04-2026,MediCare Clinic
+
+09-04-2026,10:15 AM,11:00 AM,45 Mins,Ankit Verma,9812345678,ankit@gmail.com,CM-107,Dhanbad,Eye Examination,Ophthalmology,900,1062,Dr. Pooja Sharma,Check Out,Online Booking,08-04-2026,MediCare Clinic
+
+09-04-2026,11:30 AM,12:00 PM,30 Mins,Karan Gupta,9898989898,karan@gmail.com,CM-108,Bokaro,Heart Checkup,Cardiology,2000,2360,Dr. Rajesh Gupta,Waiting,Reception,08-04-2026,MediCare Clinic
+
+09-04-2026,1:00 PM,1:30 PM,30 Mins,Meena Devi,9123987654,meena@gmail.com,CM-109,Jamshedpur,Diabetes Consultation,Endocrinology,1000,1180,Dr. Anita Roy,Scheduled,Online Booking,08-04-2026,MediCare Clinic
+
+09-04-2026,2:00 PM,2:45 PM,45 Mins,Sachin Patel,9012345678,sachin@gmail.com,CM-110,Ranchi,Ultrasound,Radiology,1800,2124,Dr. Neha Verma,Completed,Reception,08-04-2026,MediCare Clinic

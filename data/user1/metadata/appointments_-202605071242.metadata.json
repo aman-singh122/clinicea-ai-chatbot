@@ -1,0 +1,53 @@
+{
+  "dataset": "appointments_-202605071242",
+  "metrics": [
+    "Appointment Duration",
+    "Waiting Duration",
+    "Consultation Duration",
+    "Mobile",
+    "Service Price (Before tax)",
+    "Service Price (After tax)",
+    "Feedback Date",
+    "Feedback Score",
+    "Feedback Comments"
+  ],
+  "dimensions": [
+    "Appt Start Time",
+    "Appt End Time",
+    "Waiting Time",
+    "Engaged Time",
+    "Check Out Time",
+    "Video Consultation",
+    "ApptWithFullName",
+    "Email Id",
+    "File No",
+    "Patient Source",
+    "Patient Source Description",
+    "Patient Address",
+    "Patient City",
+    "Service Name",
+    "Service Category",
+    "Resource",
+    "Status",
+    "Cancel Reason",
+    "For",
+    "Appointment Source",
+    "Appointment Comments",
+    "New Appointment",
+    "Package Item",
+    "Created By",
+    "Created Time 2",
+    "Last Modified By",
+    "Modified Time 2",
+    "Organisation Name"
+  ],
+  "dates": [
+    "ApptStartDtm",
+    "Cancelled On",
+    "First Checked Out Appointment Date",
+    "Next Appointment Date",
+    "Created On Date",
+    "Last Modified Date"
+  ],
+  "createdAt": "2026-06-07T15:43:35.739Z"
+}

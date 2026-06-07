@@ -46,7 +46,9 @@ const statusTitle = document.getElementById("statusTitle");
 
 let isBusy = false;
 let docs = [];
-let activeDoc = null;
+
+let selectedDataset = null;
+let selectedParquet = null;
 let chatHistory = [];
 
 let csvMode =
@@ -234,6 +236,8 @@ async function uploadFile(file) {
       body: formData,
     });
     const data = await res.json();
+    console.log("DOCUMENT API RESPONSE:");
+console.log(data);
     uploadProgress.style.display = "none";
     if (res.ok) {
       addDoc(file.name, file.size);
@@ -320,14 +324,34 @@ function addDoc(name, size) {
         </svg>
       </button>`;
 
-  item.addEventListener("click", (e) => {
-    if (e.target.closest(".doc-remove")) return;
-    document
-      .querySelectorAll(".doc-item")
-      .forEach((d) => d.classList.remove("active"));
-    item.classList.add("active");
-    activeDoc = name;
-  });
+item.addEventListener("click", (e) => {
+
+  if (e.target.closest(".doc-remove")) return;
+
+  document
+    .querySelectorAll(".doc-item")
+    .forEach((d) => d.classList.remove("active"));
+
+  item.classList.add("active");
+
+  activeDoc = name;
+
+  // =========================
+  // PARQUET SELECTION
+  // =========================
+
+  const cleanName = name
+    .replace(/^\d+\.\s*/, "")
+    .replace(".parquet", "");
+
+  selectedParquet = cleanName;
+
+  console.log(
+    "SELECTED PARQUET:",
+    selectedParquet
+  );
+
+});
 
   docList.appendChild(item);
   item.click();
@@ -375,14 +399,18 @@ async function sendMessage() {
     // CSV MODE
     // =========================
 
-    if (csvMode) {
-      endpoint = "http://localhost:5000/api/sql-chat"; //csv chat
+if (csvMode) {
+  endpoint = "http://localhost:5000/api/sql-chat";
 
-      bodyData = {
-        user: userSelect.value, //user1 or user2
-        query: text,
-      };
-    }
+  bodyData = {
+    user: userSelect.value,
+    query: text,
+    dataset: selectedDataset
+  };
+
+  console.log("SENDING DATASET:");
+  console.log(selectedDataset);
+}
 
     // =========================
     // FETCH
@@ -402,8 +430,12 @@ async function sendMessage() {
       //     user: "user1"
       //                      };
     });
-    const data = await res.json();
-    removeTyping(typingId);
+  const data = await res.json();
+
+console.log("FULL RESPONSE:");
+console.log(data);
+
+removeTyping(typingId);
 
     if (!stopRequested) {
       // ================= ANALYTICS =================
@@ -1196,6 +1228,14 @@ userSelect.value = savedUser;
 userAvatar.textContent = savedUser === "user1" ? "U1" : "U2";
 
 async function loadDocuments() {
+  docList.innerHTML = "";
+
+const datasetList =
+  document.getElementById(
+    "datasetList"
+  );
+
+datasetList.innerHTML = "";
   const user = localStorage.getItem("user") || "user1";
   try {
     const res = await fetch(`http://localhost:5000/documents/${user}`);
@@ -1207,8 +1247,103 @@ async function loadDocuments() {
       return;
     }
     emptyDocs.style.display = "none";
-    data.forEach((doc, index) => addDoc(`${index + 1}. ${doc.filename}`, null));
-  } catch (err) {
+// =========================
+// PDF FILES
+// =========================
+
+const pdfFiles =
+  data.filter(
+    file => file.type === "pdf"
+  );
+
+pdfFiles.forEach(
+  (doc, index) => {
+
+    addDoc(
+      `${index + 1}. ${doc.filename}`,
+      null
+    );
+
+  }
+);
+
+// =========================
+// PARQUET FILES
+// =========================
+
+const parquetFiles =
+  data.filter(
+    file =>
+      file.type === "parquet"
+  );
+
+  console.log("PARQUET FILES:");
+console.log(parquetFiles);
+
+parquetFiles.forEach(
+  (file, index) => {
+
+    const item =
+      document.createElement(
+        "div"
+      );
+
+    item.className =
+      "doc-item";
+
+      item.addEventListener(
+  "click",
+  () => {
+
+    document
+      .querySelectorAll(
+        "#datasetList .doc-item"
+      )
+      .forEach(el =>
+        el.classList.remove(
+          "active"
+        )
+      );
+
+    item.classList.add(
+      "active"
+    );
+
+    selectedDataset =
+      file.filename;
+
+    console.log(
+      "SELECTED DATASET:",
+      selectedDataset
+    );
+
+  }
+);
+
+    item.innerHTML = `
+
+      <div class="doc-icon">
+        📊
+      </div>
+
+      <div class="doc-info">
+
+        <div class="doc-name">
+
+          ${index + 1}. ${file.filename}
+
+        </div>
+
+      </div>
+
+    `;
+
+    datasetList.appendChild(
+      item
+    );
+
+  }
+);  } catch (err) {
     console.error("Error loading documents", err);
   }
 }

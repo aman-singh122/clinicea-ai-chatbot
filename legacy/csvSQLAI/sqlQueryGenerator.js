@@ -2,6 +2,7 @@ import ai from "../../../config/gemini.js";
 
 async function sqlQueryGenerator(
   query,
+  user,
   schemaInfo
 ) {
 

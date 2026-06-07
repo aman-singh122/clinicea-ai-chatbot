@@ -12,11 +12,9 @@ function smartVisualizationSelector(
     !Array.isArray(result) ||
     result.length === 0
   ) {
-
     return {
       type: "empty"
     };
-
   }
 
   const q =
@@ -32,12 +30,69 @@ function smartVisualizationSelector(
     Object.keys(firstRow);
 
   // =========================
+  // FIND COLUMN TYPES
+  // =========================
+
+  const numericColumns =
+    columns.filter(col =>
+      result.some(row => {
+
+        const value =
+          row[col];
+
+        if (
+          typeof value === "number"
+        ) {
+          return true;
+        }
+
+        if (
+          typeof value === "string"
+        ) {
+
+          const cleaned =
+            value
+              .replace(/,/g, "")
+              .replace(/₹/g, "")
+              .replace(/%/g, "")
+              .trim();
+
+          return !isNaN(
+            Number(cleaned)
+          );
+        }
+
+        return false;
+
+      })
+    );
+
+  const dateColumns =
+    columns.filter(col => {
+
+      const lower =
+        col.toLowerCase();
+
+      return (
+        lower.includes("date") ||
+        lower.includes("dtm") ||
+        lower.includes("time")
+      );
+
+    });
+
+  const statusColumns =
+    columns.filter(col =>
+      col.toLowerCase().includes("status")
+    );
+
+  // =========================
   // KPI
   // =========================
 
   if (
     rowCount === 1 &&
-    columns.length === 1
+    numericColumns.length === 1
   ) {
 
     return {
@@ -52,11 +107,27 @@ function smartVisualizationSelector(
 
   if (
     rowCount === 1 &&
-    columns.length === 2
+    columns.length > 1
   ) {
 
     return {
       type: "kpiCard"
+    };
+
+  }
+
+  // =========================
+  // DATE + STATUS
+  // =========================
+
+  if (
+    dateColumns.length > 0 &&
+    statusColumns.length > 0 &&
+    numericColumns.length > 0
+  ) {
+
+    return {
+      type: "stackedBar"
     };
 
   }
@@ -83,7 +154,9 @@ function smartVisualizationSelector(
 
     trendWords.some(
       word => q.includes(word)
-    )
+    ) ||
+
+    dateColumns.length > 0
 
   ) {
 
@@ -100,7 +173,6 @@ function smartVisualizationSelector(
   const distributionWords = [
 
     "distribution",
-    "status",
     "share",
     "percentage",
     "ratio"
@@ -130,23 +202,39 @@ function smartVisualizationSelector(
   }
 
   // =========================
-  // TOP / BEST
+  // STATUS ANALYSIS
   // =========================
-
-  const topWords = [
-
-    "top",
-    "highest",
-    "best",
-    "most"
-
-  ];
 
   if (
 
-    topWords.some(
-      word => q.includes(word)
-    )
+    q.includes("status")
+
+  ) {
+
+    return {
+
+      type:
+
+        rowCount <= 8
+
+          ? "pieChart"
+
+          : "barChart"
+
+    };
+
+  }
+
+  // =========================
+  // REVENUE
+  // =========================
+
+  if (
+
+    q.includes("revenue") ||
+    q.includes("sales") ||
+    q.includes("income") ||
+    q.includes("earnings")
 
   ) {
 
@@ -165,14 +253,23 @@ function smartVisualizationSelector(
   }
 
   // =========================
-  // REVENUE
+  // TOP ANALYSIS
   // =========================
+
+  const topWords = [
+
+    "top",
+    "highest",
+    "best",
+    "most"
+
+  ];
 
   if (
 
-    q.includes("revenue") ||
-    q.includes("sales") ||
-    q.includes("income")
+    topWords.some(
+      word => q.includes(word)
+    )
 
   ) {
 
@@ -209,11 +306,11 @@ function smartVisualizationSelector(
   }
 
   // =========================
-  // LARGE TABLES
+  // HUGE TABLES
   // =========================
 
   if (
-    rowCount > 20
+    rowCount > 100
   ) {
 
     return {
