@@ -39,42 +39,29 @@ function graphDecisionEngine(
   // NUMERIC COLUMN
   // =========================
 
-  const numericColumn =
-    columns.find(col =>
+const numericColumn =
+  columns.find(col =>
 
-      result.some(row => {
+    result.every(row => {
 
-        const value =
-          row[col];
+      const value = row[col];
 
-        if (
-          typeof value === "number"
-        ) {
-          return true;
-        }
+      return (
+        value === null ||
+        value === undefined ||
+        typeof value === "number"
+      );
 
-        if (
-          typeof value === "string"
-        ) {
+    })
 
-          const cleaned =
-            value
-              .replace(/,/g, "")
-              .replace(/₹/g, "")
-              .replace(/%/g, "")
-              .trim();
+  );
 
-          return !isNaN(
-            Number(cleaned)
-          );
+  console.log(
+  "NUMERIC COLUMN:",
+  numericColumn
+);
 
-        }
 
-        return false;
-
-      })
-
-    );
 
   if (!numericColumn) {
     return { graph: false };
@@ -84,11 +71,19 @@ function graphDecisionEngine(
   // TEXT COLUMN
   // =========================
 
-  const textColumn =
-    columns.find(col =>
-      typeof firstRow[col] ===
-      "string"
-    ) || columns[0];
+const textColumn =
+  columns.find(col =>
+
+    result.some(row =>
+      typeof row[col] === "string"
+    )
+
+  );
+
+  console.log(
+  "TEXT COLUMN:",
+  textColumn
+);
 
   // =========================
   // DATE COLUMN

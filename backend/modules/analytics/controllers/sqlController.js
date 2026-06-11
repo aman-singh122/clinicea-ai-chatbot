@@ -433,10 +433,12 @@ const sql = useDynamicFlow
 
     let graphData = null;
 
-    if (graphConfig.graph) {
-      graphData = graphGenerator(result);
-    }
-
+if (graphConfig.graph) {
+  graphData = graphGenerator(
+    result,
+    graphConfig
+  );
+}
     console.log("\nGRAPH CONFIG:\n", graphConfig);
 
     console.log("\nGRAPH DATA:\n", graphData);

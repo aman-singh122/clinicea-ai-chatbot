@@ -1,4 +1,4 @@
-function graphGenerator(result) {
+function graphGenerator(result, graphConfig) {
 
   // =========================
   // EMPTY CHECK
@@ -79,92 +79,37 @@ function graphGenerator(result) {
 // FIND NUMERIC COLUMN
 // =========================
 
-const valueKey = keys.find(key => {
+const labelKey =
+  graphConfig?.xAxis;
 
-  return result.some(row => {
+const valueKey =
+  graphConfig?.yAxis;
 
-    const value = row[key];
-
-    if (
-      typeof value === "number"
-    ) {
-      return true;
-    }
-
-    if (
-      typeof value === "string"
-    ) {
-
-      const cleaned =
-        value
-          .replace(/,/g, "")
-          .replace(/₹/g, "")
-          .replace(/%/g, "")
-          .replace(/mins/gi, "")
-          .replace(/hours/gi, "")
-          .replace(/days/gi, "")
-          .trim();
-
-      return !isNaN(
-        Number(cleaned)
-      );
-
-    }
-
-    return false;
-
-  });
-
-});
-
-if (!valueKey) {
+if (
+  !labelKey ||
+  !valueKey
+) {
 
   console.log(
-    "NO NUMERIC COLUMN FOUND"
+    "GRAPH AXIS NOT FOUND"
   );
 
   return null;
 
 }
 
-// =========================
-// FIND LABEL COLUMN
-// =========================
-
-const labelKey = keys.find(
-  key =>
-    key !== valueKey
+console.log(
+  "GRAPH LABEL KEY:",
+  labelKey
 );
 
-if (!labelKey) {
+console.log(
+  "GRAPH VALUE KEY:",
+  valueKey
+);
 
-  console.log(
-    "NO LABEL COLUMN FOUND"
-  );
 
-  return null;
 
-}
-
-  if (!labelKey) {
-
-    console.log(
-      "NO LABEL COLUMN FOUND"
-    );
-
-    return null;
-
-  }
-
-  console.log(
-    "GRAPH LABEL KEY:",
-    labelKey
-  );
-
-  console.log(
-    "GRAPH VALUE KEY:",
-    valueKey
-  );
 
   // =========================
   // LABELS

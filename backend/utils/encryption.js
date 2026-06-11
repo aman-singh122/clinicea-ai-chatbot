@@ -31,6 +31,7 @@ export function decrypt(cipher) {
       cipher,
       SECRET
     );
+    
 
   return bytes.toString(
     CryptoJS.enc.Utf8
